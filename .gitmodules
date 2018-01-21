@@ -1,0 +1,3 @@
+[submodule "external_packages/Sugar"]
+	path = external_packages/Sugar
+	url = https://github.com/ruslo/sugar.git
