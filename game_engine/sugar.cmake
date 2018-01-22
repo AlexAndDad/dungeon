@@ -1,5 +1,4 @@
 sugar_files(SOURCE_FILES
-        global_alarm.cpp global_alarm.hpp
         deadline_timer.cpp deadline_timer.hpp
         executor.cpp executor.hpp
         executor_error.cpp executor_error.hpp
@@ -10,4 +9,5 @@ sugar_files(SOURCE_FILES
         pselect_service.cpp pselect_service.hpp
         service.cpp service.hpp)
 
+sugar_include(deadline_timer_)
 sugar_include(utility)

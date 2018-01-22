@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.9)
-include(external_packages/Sugar/cmake/Sugar)
+include(external_packages/Init.cmake)
 include(sugar_files)
 include(sugar_include)
 

@@ -6,7 +6,7 @@
 
 #include "game_engine/utility/non_copyable.hpp"
 #include "executor_error.hpp"
-#include "game_engine/global_alarm.hpp"
+#include "game_engine/deadline_timer_/deadline_timer_service.hpp"
 
 #include <sys/select.h>
 #include <csignal>
@@ -109,8 +109,8 @@ namespace game_engine {
             void set(std::chrono::milliseconds const& d)
             {
                 auto& ts = acquire();
-                ts.tv_sec = long(d.count() / 1000000);
-                ts.tv_nsec = long((d.count() % 1000000) * 1000);
+                ts.tv_sec = long(d.count() / 1000);
+                ts.tv_nsec = long((d.count() % 1000) * 1000000);
             }
         };
 
@@ -228,6 +228,11 @@ namespace game_engine {
         };
     }
 
+    pselect_service::pselect_service(executor& owner)
+        : base_class (owner)
+        , deadline_timer_service_(use_service<deadline_timer_service>(owner))
+    {}
+
     void pselect_service::block_and_wait()
     {
         pselect_call call_site;
@@ -235,17 +240,17 @@ namespace game_engine {
             call_site.add_fd(entry.fd, entry.state_mask);
         }
 
-        auto ttr = alarm_service.calc_time_to_run();
-        if (alarm_service.valid_duration(ttr))
+        auto ttr_data = deadline_timer_service_.time_to_earliest_deadline();
+        if (std::get<bool>(ttr_data))
         {
-            call_site.set_timeout(ttr);
+            auto native_duration = std::get<deadline_timer_service::duration >(ttr_data);
+            auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(native_duration);
+            call_site.set_timeout(ms);
         }
 
         auto result = call_site();
 
-        if (result.interrupted() or result.has_io()) {
-            alarm_service.notify(alarm_service.now());
-        }
+        deadline_timer_service_.notify_time();
 
     }
 }

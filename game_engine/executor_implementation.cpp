@@ -9,7 +9,7 @@
 namespace game_engine {
 
     executor_implementation::executor_implementation()
-        : services()
+        : services_()
         , pending_closures_()
         , work_count_(0)
         , stopped_(false)
@@ -20,16 +20,14 @@ namespace game_engine {
 
     void executor_implementation::use_core_services(executor &owner_handle)
     {
-        pselect_service_ = std::addressof(use_service<pselect_service>(owner_handle));
+        pselect_service_ = use_service_ptr(owner_handle, detail::service_tag<pselect_service>());
     }
 
     void executor_implementation::shutdown_services()
     {
-        auto first = rbegin(services);
-        auto last = rend(services);
-        for (auto i = first; i != last; ++i) {
-            (*i)->shutdown_service();
-        }
+        /// @todo add dependency ordering
+        for (auto &&entry : services_)
+            entry.second->shutdown_service();
     }
 
     std::size_t executor_implementation::poll_one()

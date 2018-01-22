@@ -14,13 +14,6 @@
 
 namespace game_engine {
 
-    namespace detail {
-        template<class ServiceType>
-        struct service_tag
-        {
-        };
-    }
-
     struct executor_implementation;
 
     struct executor
@@ -123,15 +116,7 @@ namespace game_engine {
     template<class ServiceType>
     auto executor::use_service(detail::service_tag<ServiceType> tag) -> ServiceType &
     {
-        auto &services = impl_->services;
-        auto matches_identity = [](auto &&service_ptr) {
-            return service_ptr->get_identity() == std::addressof(ServiceType::ident);
-        };
-        auto i = find_if(begin(services), end(services), matches_identity);
-        if (i == end(services)) {
-            i = services.insert(end(services), std::make_unique<ServiceType>(*this));
-        }
-        return static_cast<ServiceType &>(**i);
+        return impl_->use_service(*this, tag);
     }
 
 

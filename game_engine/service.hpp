@@ -5,22 +5,31 @@
 #pragma once
 
 #include <memory>
+#include <game_engine/utility/non_copyable.hpp>
 
 namespace game_engine {
 
     struct executor;
 
+    namespace detail {
+        template<class ServiceType>
+        struct service_tag
+        {
+        };
+    }
+
+
     struct service
     {
 
-        struct id;
-        using identity_type = id *;
+        struct id_sentinel_base;
+        using identifier = id_sentinel_base *;
 
         service(executor& owner);
 
         virtual void shutdown_service() = 0;
 
-        virtual identity_type get_identity() const = 0;
+        virtual identifier get_identity() const = 0;
 
         executor& get_executor() const {
             return owner_.get();
@@ -30,19 +39,15 @@ namespace game_engine {
     };
 
 
-    struct service::id
+    struct service::id_sentinel_base : utility::non_copyable
     {
-        id()
+        id_sentinel_base()
         {};
-
-        id(id const &) = delete;
-
-        id &operator=(id const &) = delete;
     };
 
     namespace detail {
         template<class ServiceType>
-        struct service_id : service::id
+        struct service_id : service::id_sentinel_base
         {
 
         };
@@ -60,13 +65,18 @@ namespace game_engine {
 
         }
 
-        virtual identity_type get_identity() const override
+        virtual identifier get_identity() const override
         {
             return std::addressof(ident);
         }
 
         static detail::service_id<service_type> ident;
     };
+
+    template<class ServiceType> service::identifier service_identifier(detail::service_tag<ServiceType>)
+    {
+        return service::identifier(&ServiceType::ident);
+    }
 
     template<class ServiceType>
     typename detail::service_id<ServiceType> service_base<ServiceType>::ident;
@@ -100,7 +110,7 @@ namespace game_engine {
         using implementation_type = std::unique_ptr<implementation_class, deleter>;
 
         template<class...Args>
-        auto create(Args &&...args) -> implementation_type
+        auto construct(Args &&...args) -> implementation_type
         {
             auto result = implementation_type
                 {

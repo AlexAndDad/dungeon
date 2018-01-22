@@ -17,7 +17,7 @@ namespace game_engine {
         template<class...Args>
         io_object(executor &owner, Args &&...args)
             : service_(use_service<service_type>(owner))
-            , impl_(get_service().create(std::forward<Args>(args)...))
+            , impl_(get_service().construct(std::forward<Args>(args)...))
         {
 
         }

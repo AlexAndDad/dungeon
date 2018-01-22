@@ -13,11 +13,17 @@
 #include "game_engine/io_object.hpp"
 
 namespace game_engine {
+    struct deadline_timer_service;
+
     struct pselect_service : service_base<pselect_service>
     {
+        using base_class = service_base<pselect_service>;
+
         using service_base<pselect_service>::service_base;
         using clock_type = std::chrono::system_clock;
         using time_point = clock_type::time_point;
+
+        pselect_service(executor& owner);
 
         enum fd_state
         {
@@ -94,6 +100,7 @@ namespace game_engine {
 
         void notify_destroy(timeout_listener_implementation &impl);
 
+        deadline_timer_service& deadline_timer_service_;
         std::list<fd_state_action> pending_fd_actions_;
 
     };
