@@ -5,7 +5,7 @@
 #include "lich.hpp"
 #include "goblin.hpp"
 #include <typeindex>
-
+#include <algorithm>
 
 namespace {
     const auto things_that_liches_hate = std::vector<std::type_index> {

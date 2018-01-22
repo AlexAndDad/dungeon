@@ -3,7 +3,7 @@
 //
 
 #include "deadline_timer_service.hpp"
-
+#include <algorithm>
 namespace game_engine {
 
     auto deadline_timer_service::time_to_earliest_deadline() const -> std::tuple<bool, duration>
