@@ -84,8 +84,7 @@ int main()
     });
 
     while (not executor.stopped()) {
-        auto ran = executor.run_one();
-        std::cout << "ran: " << ran << '\n';
+        executor.run();
 
     }
 

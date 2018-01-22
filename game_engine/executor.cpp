@@ -41,6 +41,14 @@ namespace game_engine {
         return impl_->run_one();
     }
 
+    std::size_t executor::run()
+    {
+        std::size_t result = 0;
+        while (not stopped())
+            result += impl_->run_one();
+        return result;
+    }
+
     auto make_work(executor& owner) -> executor::work
     {
         return executor::work(owner);

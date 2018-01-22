@@ -42,6 +42,10 @@ namespace game_engine {
         /// @returns number of closures that were run
         std::size_t run_one();
 
+        /// Run closures and async events until the executor has no more work
+        /// @return the number of closures executed.
+        std::size_t run();
+
         /// Indicate whether the executor has stopped as a result of running out of work;
         /// @returns bool true if stopped, otherwise false
         bool stopped() const;
