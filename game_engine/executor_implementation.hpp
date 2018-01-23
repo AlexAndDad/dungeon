@@ -74,13 +74,19 @@ namespace game_engine {
     auto
     executor_implementation::use_service(executor &owner_handle, detail::service_tag <ServiceType> tag) -> ServiceType &
     {
+        ///@todo dependency ordering?
         auto ident = service_identifier(tag);
-        /// @todo service dependency ordering
-        auto &candidate = services_[ident];
-        if (not candidate) {
-            candidate = std::make_unique<ServiceType>(owner_handle);
+        auto& cache_ptr = services_[ident];
+        if (not cache_ptr)
+        {
+            auto candidate = std::make_unique<ServiceType>(owner_handle);
+            if (not cache_ptr)
+            {
+                cache_ptr = std::move(candidate);
+            }
         }
-        return static_cast<ServiceType &>(*candidate);
+        return static_cast<ServiceType &>(*cache_ptr);
+
     }
 
     template<class ServiceType>

@@ -25,6 +25,8 @@ namespace game_engine {
                 return "nothing to wait for";
             case executor_error::operation_aborted:
                 return "operation aborted";
+            case executor_error ::not_started:
+                return "not started";
         }
         return "unknown code: " + std::to_string(code);
     }

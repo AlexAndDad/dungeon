@@ -72,6 +72,8 @@ namespace game_engine {
                 };
             get_service().async_wait(get_impl(), std::move(my_handler));
         };
+
+        void cancel();
     };
 
 

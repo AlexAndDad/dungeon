@@ -1,4 +1,5 @@
 sugar_files(SOURCE_FILES
+        async_completion_handler.hpp
         deadline_timer.cpp deadline_timer.hpp
         executor.cpp executor.hpp
         executor_error.cpp executor_error.hpp

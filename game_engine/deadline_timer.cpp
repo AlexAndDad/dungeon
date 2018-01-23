@@ -8,4 +8,8 @@
 namespace game_engine {
 
 
+    void deadline_timer::cancel()
+    {
+        get_service().cancel(get_impl());
+    }
 }

@@ -12,6 +12,7 @@ namespace game_engine {
     {
         nothing_to_wait_for = 1,        // pselect has nothing to wait for
         operation_aborted = 2,          // async operation was aborted by cancel()
+        not_started = 3,                // the operation hasn't/didn't start
 
     };
 
