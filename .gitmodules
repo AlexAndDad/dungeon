@@ -1,3 +1,6 @@
 [submodule "external_packages/Sugar"]
 	path = external_packages/Sugar
 	url = https://github.com/ruslo/sugar.git
+[submodule "external_packages/polly"]
+	path = external_packages/polly
+	url = https://github.com/ruslo/polly.git
