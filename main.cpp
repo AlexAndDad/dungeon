@@ -227,7 +227,7 @@ int main(void)
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
         auto angle = float(std::fmod(glfwGetTime(), PI * 2));
-        auto m = glm::rotate(matrix(1.0), angle, glm::vec3(0.0, 0.0, 1.0));
+        auto m = glm::rotate(matrix(1.0), angle, glm::vec3(0.0, 0.0, -1.0));
         auto p = orthogonal_matrix(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
         auto mvp = matrix(1.0) * p * m;
         glUseProgram(program);
