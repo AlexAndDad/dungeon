@@ -3,6 +3,7 @@
 //
 
 #include "deadline_timer_impl.hpp"
+#include <ciso646>
 
 namespace game_engine {
 

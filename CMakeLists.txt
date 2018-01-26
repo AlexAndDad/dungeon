@@ -1,9 +1,15 @@
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 3.6)
 include(external_packages/Init.cmake)
-include(sugar_files)
-include(sugar_include)
+option(HUNTER_STATUS_DEBUG "Hunter debug info" ON)
 
+HunterGate(
+        URL "https://github.com/ruslo/hunter/archive/v0.19.234.tar.gz"
+        SHA1 "3deec1041bd01c91e78269522b901fbab3a765e5"
+)
 project(dungeon)
+
+hunter_add_package(Sugar)
+find_package(Sugar CONFIG REQUIRED)
 
 set(my_target dungeon)
 
@@ -21,7 +27,14 @@ add_executable(${my_target} ${SOURCE_FILES})
 
 # add ncurses
 #
-set(CURSES_NEED_NCURSES TRUE)
-find_package(Curses REQUIRED)
-target_include_directories(${my_target} SYSTEM PUBLIC ${CURSES_INCLUDE_DIRS})
-target_link_libraries(${my_target} PUBLIC ${CURSES_LIBRARIES})
+#set(CURSES_NEED_NCURSES TRUE)
+#find_package(Curses REQUIRED)
+#target_include_directories(${my_target} SYSTEM PUBLIC ${CURSES_INCLUDE_DIRS})
+#target_link_libraries(${my_target} PUBLIC ${CURSES_LIBRARIES})
+
+#
+#
+#
+hunter_add_package(Boost)
+find_package(Boost CONFIG REQUIRED)
+target_link_libraries(${my_target} PUBLIC Boost::boost)

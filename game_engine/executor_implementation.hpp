@@ -12,6 +12,7 @@
 #include <deque>
 #include <functional>
 #include <unordered_map>
+#include <ciso646>
 
 namespace game_engine {
 

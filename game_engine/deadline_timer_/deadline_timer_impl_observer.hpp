@@ -7,6 +7,7 @@
 #include "deadline_timer_impl.hpp"
 #include <functional>
 #include <memory>
+#include <ciso646>
 
 namespace game_engine {
     /// Maintain an observer reference to a deadline_timer_impl

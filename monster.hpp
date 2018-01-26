@@ -10,6 +10,7 @@
 #include <type_traits>
 #include <typeinfo>
 #include <vector>
+#include <ciso646>
 
 // The concept of a polymorphic monster, expressed as a value type
 struct Monster {
