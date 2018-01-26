@@ -97,40 +97,146 @@ int main()
     return 0;
 }
  */
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/trigonometric.hpp>
+#include <glm/vec3.hpp>
+#include <glm/vec4.hpp>
+#include <glm/mat4x4.hpp>
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <cmath>
+
+static constexpr double PI = 3.141592;
+
+static const struct
+{
+    float x, y;
+    float r, g, b;
+} vertices[3] =
+    {
+        { -0.6f, -0.4f, 1.f, 0.f, 0.f },
+        {  0.6f, -0.4f, 0.f, 1.f, 0.f },
+        {   0.f,  0.6f, 0.f, 0.f, 1.f }
+    };
+static const char* vertex_shader_text =
+    "uniform mat4 MVP;\n"
+        "attribute vec3 vCol;\n"
+        "attribute vec2 vPos;\n"
+        "varying vec3 color;\n"
+        "void main()\n"
+        "{\n"
+        "    gl_Position = MVP * vec4(vPos, 0.0, 1.0);\n"
+        "    color = vCol;\n"
+        "}\n";
+static const char* fragment_shader_text =
+    "varying vec3 color;\n"
+        "void main()\n"
+        "{\n"
+        "    gl_FragColor = vec4(color, 1.0);\n"
+        "}\n";
+static void error_callback(int error, const char* description)
+{
+    fprintf(stderr, "Error: %s\n", description);
+}
+static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, GLFW_TRUE);
+}
+
+inline void mat4x4_ortho(glm::mat4& M, float l, float r, float b, float t, float n, float f)
+{
+    M[0][0] = 2.f/(r-l);
+    M[0][1] = M[0][2] = M[0][3] = 0.f;
+
+    M[1][1] = 2.f/(t-b);
+    M[1][0] = M[1][2] = M[1][3] = 0.f;
+
+    M[2][2] = -2.f/(f-n);
+    M[2][0] = M[2][1] = M[2][3] = 0.f;
+
+    M[3][0] = -(r+l)/(r-l);
+    M[3][1] = -(t+b)/(t-b);
+    M[3][2] = -(f+n)/(f-n);
+    M[3][3] = 1.f;
+}
+
+inline glm::mat4 orthogonal_matrix(float l, float r, float b, float t, float n, float f)
+{
+    auto result = glm::mat4(1.0);
+    mat4x4_ortho(result, l, r, b, t, n, f);
+    return result;
+}
+
 
 int main(void)
 {
     GLFWwindow* window;
-
-    /* Initialize the library */
+    GLuint vertex_buffer, vertex_shader, fragment_shader, program;
+    GLint mvp_location, vpos_location, vcol_location;
+    glfwSetErrorCallback(error_callback);
     if (!glfwInit())
-        return -1;
-
-    /* Create a windowed mode window and its OpenGL context */
-    window = glfwCreateWindow(640, 480, "Hello World", NULL, NULL);
+        exit(EXIT_FAILURE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
     if (!window)
     {
         glfwTerminate();
-        return -1;
+        exit(EXIT_FAILURE);
     }
-
-    /* Make the window's context current */
+    glfwSetKeyCallback(window, key_callback);
     glfwMakeContextCurrent(window);
-
-    /* Loop until the user closes the window */
+    glewInit();
+    glfwSwapInterval(1);
+    // NOTE: OpenGL error checks have been omitted for brevity
+    glGenBuffers(1, &vertex_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+    glShaderSource(vertex_shader, 1, &vertex_shader_text, NULL);
+    glCompileShader(vertex_shader);
+    fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragment_shader, 1, &fragment_shader_text, NULL);
+    glCompileShader(fragment_shader);
+    program = glCreateProgram();
+    glAttachShader(program, vertex_shader);
+    glAttachShader(program, fragment_shader);
+    glLinkProgram(program);
+    mvp_location = glGetUniformLocation(program, "MVP");
+    vpos_location = glGetAttribLocation(program, "vPos");
+    vcol_location = glGetAttribLocation(program, "vCol");
+    glEnableVertexAttribArray(vpos_location);
+    glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE,
+                          sizeof(float) * 5, (void*) 0);
+    glEnableVertexAttribArray(vcol_location);
+    glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
+                          sizeof(float) * 5, (void*) (sizeof(float) * 2));
     while (!glfwWindowShouldClose(window))
     {
-        /* Render here */
+        float ratio;
+        int width, height;
+        using matrix = glm::mat4;
+        glfwGetFramebufferSize(window, &width, &height);
+        ratio = width / (float) height;
+        glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
-
-        /* Swap front and back buffers */
+        auto angle = float(std::fmod(glfwGetTime(), PI * 2));
+        auto m = glm::rotate(matrix(1.0), angle, glm::vec3(0.0, 0.0, 1.0));
+        auto p = orthogonal_matrix(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
+        auto mvp = matrix(1.0) * p * m;
+        glUseProgram(program);
+        glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) glm::value_ptr(mvp));
+        glDrawArrays(GL_TRIANGLES, 0, 3);
         glfwSwapBuffers(window);
-
-        /* Poll for and process events */
         glfwPollEvents();
     }
-
+    glfwDestroyWindow(window);
     glfwTerminate();
-    return 0;
+    exit(EXIT_SUCCESS);
 }

@@ -32,6 +32,10 @@ add_executable(${my_target} ${SOURCE_FILES})
 include(AddBoost)
 AddBoost(TARGETS ${my_target} PRIVATE COMPONENTS system)
 
+hunter_add_package(glm)
+find_package(glm CONFIG REQUIRED)
+target_link_libraries(${my_target} PUBLIC glm)
+
 hunter_add_package(glew)
 find_package(glew CONFIG REQUIRED)
 target_link_libraries(${my_target} PUBLIC glew::glew)
