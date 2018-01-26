@@ -31,3 +31,11 @@ add_executable(${my_target} ${SOURCE_FILES})
 #
 include(AddBoost)
 AddBoost(TARGETS ${my_target} PRIVATE COMPONENTS system)
+
+hunter_add_package(glew)
+find_package(glew CONFIG REQUIRED)
+target_link_libraries(${my_target} PUBLIC glew::glew)
+
+hunter_add_package(glfw)
+find_package(glfw3 CONFIG REQUIRED)
+target_link_libraries(${my_target} PUBLIC glfw)
