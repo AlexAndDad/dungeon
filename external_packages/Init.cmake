@@ -1,4 +1,17 @@
+option(PROJECT_STATUS_PRINT "Print working status" OFF)
+
+
+list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR})
+include(HunterGate)
+option(HUNTER_STATUS_DEBUG "Hunter debug info" OFF)
+option(HUNTER_STATUS_PRINT "Print working status" ON)
+HunterGate(
+        URL "https://github.com/ruslo/hunter/archive/v0.19.234.tar.gz"
+        SHA1 "3deec1041bd01c91e78269522b901fbab3a765e5"
+)
+
 if ("${CMAKE_SOURCE_DIR}/external_packages" STREQUAL "${CMAKE_CURRENT_LIST_DIR}")
+
 
     if (DEFINED CMAKE_TOOLCHAIN_FILE)
         message(STATUS "Configuring for toolchain [${CMAKE_TOOLCHAINFILE}]")

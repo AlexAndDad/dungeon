@@ -1,0 +1,51 @@
+if (DEFINED Project_Included_AddBoost)
+    return()
+endif ()
+set(Project_Included_AddBoost 1)
+
+include(ProjectInvoke)
+
+include(CMakeParseArguments)
+macro(AddBoost)
+    set(options PUBLIC PRIVATE)
+    set(oneValueArgs TARGET)
+    set(multiValueArgs TARGETS COMPONENTS)
+    cmake_parse_arguments(AddBoost "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+
+    if (NOT AddBoost_TARGET AND NOT AddBoost_TARGETS)
+        message(FATAL_ERROR "[AddBoost] usage: AddBoost([TARGET <target> | TARGETS <targetn> ...] [PUBLIC|PRIVATE] [COMPONENTS component ...]")
+    endif ()
+
+    if (AddBoost_TARGET)
+        list(APPEND AddBoost_TARGETS ${AddBoost_TARGET})
+    endif ()
+
+    set(AddBoost_Libs "Boost::boost")
+    set(AddBoost_ComponentsArg)
+    if (AddBoost_COMPONENTS)
+        set(AddBoost_ComponentsArg "COMPONENTS")
+        foreach (AddBoost_Component IN LISTS AddBoost_COMPONENTS)
+            list(APPEND AddBoost_Libs "Boost::${AddBoost_Component}")
+            list(APPEND AddBoost_ComponentsArg "${AddBoost_Component}")
+        endforeach ()
+    endif ()
+
+    set(AddBoost_LinkArgs)
+    if (AddBoost_PRIVATE)
+        list(APPEND AddBoost_LinkArgs "PRIVATE")
+    endif ()
+    if (AddBoost_PUBLIC)
+        list(APPEND AddBoost_LinkArgs "PUBLIC")
+    endif ()
+
+    ProjectLogInvoke(AddBoost hunter_add_package Boost ${AddBoost_ComponentsArg})
+    hunter_add_package(Boost ${AddBoost_ComponentsArg})
+
+    ProjectLogInvoke(AddBoost find_package Boost CONFIG ${AddBoost_ComponentsArg} QUIET REQUIRED)
+    find_package(Boost CONFIG ${AddBoost_ComponentsArg} QUIET REQUIRED)
+
+    foreach (AddBoost_T IN LISTS AddBoost_TARGETS)
+        ProjectLogInvoke(AddBoost target_link_libraries ${AddBoost_T} ${AddBoost_LinkArgs} ${AddBoost_Libs})
+        target_link_libraries(${AddBoost_T} ${AddBoost_LinkArgs} ${AddBoost_Libs})
+    endforeach ()
+endmacro()

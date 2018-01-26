@@ -1,0 +1,23 @@
+if (DEFINED Project_Included_ProjectInvoke)
+    return()
+endif ()
+set(Project_Included_ProjectInvoke 1)
+
+
+function(ProjectToInvokeString outvar function)
+    set(result "${function}(")
+    set(sep "")
+    foreach (arg ${ARGN})
+        set(result "${result}${sep}${arg}")
+        set(sep " ")
+    endforeach ()
+    set(result "${result})")
+    set(${outvar} "${result}" PARENT_SCOPE)
+endfunction()
+
+macro(ProjectLogInvoke ProjectInvoke_CONTEXT ProjectInvoke_Func)
+    if (PROJECT_STATUS_PRINT)
+        ProjectToInvokeString(ProjectInvoke_Str ${ProjectInvoke_Func} ${ARGN})
+        message(STATUS "[${ProjectInvoke_CONTEXT}] ${ProjectInvoke_Str}")
+    endif ()
+endmacro()
