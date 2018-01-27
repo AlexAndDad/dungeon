@@ -97,7 +97,7 @@ int main()
     return 0;
 }
  */
-#include "opengl/program.hpp"
+#include "triangle_program.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -117,13 +117,19 @@ static constexpr double PI = 3.141592;
 
 static const struct
 {
-    float x, y;
-    float r, g, b;
-} vertices[3] =
+    struct
     {
-        {-0.6f, -0.4f, 1.f, 0.f, 0.f},
-        {0.6f,  -0.4f, 0.f, 1.f, 0.f},
-        {0.f,   0.6f,  0.f, 0.f, 1.f}
+        float x, y;
+    } pos;
+    struct
+    {
+        float r, g, b;
+    } colour;
+} vertices[] =
+    {
+        {{-0.6f, -0.4f}, {1.f, 0.f, 0.f}},
+        {{0.6f,  -0.4f}, {0.f, 1.f, 0.f}},
+        {{0.f,   0.6f},  {0.f, 0.f, 1.f}}
     };
 
 static void error_callback(int error, const char *description)
@@ -175,7 +181,7 @@ int main(void)
 {
     GLFWwindow *window;
     GLuint vertex_buffer;
-    GLint mvp_location, vpos_location, vcol_location;
+//    GLint mvp_location, vpos_location, vcol_location;
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
         exit(EXIT_FAILURE);
@@ -198,23 +204,8 @@ int main(void)
     auto vertex_shader = make_vertex_shader();
     auto fragment_shader = make_fragment_shader();
 
-    auto program = opengl::program {
-        opengl::vertex_shader(shaders::vertex_shader_glsl),
-        opengl::fragment_shader(shaders::fragment_shader_glsl)
-    };
-//    program = glCreateProgram();
-//    glAttachShader(program, vertex_shader.get_id());
-//    glAttachShader(program, fragment_shader.get_id());
-//    glLinkProgram(program);
-    mvp_location = glGetUniformLocation(program.get_id(), "MVP");
-    vpos_location = glGetAttribLocation(program.get_id(), "vPos");
-    vcol_location = glGetAttribLocation(program.get_id(), "vCol");
-    glEnableVertexAttribArray(vpos_location);
-    glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE,
-                          sizeof(float) * 5, (void *) 0);
-    glEnableVertexAttribArray(vcol_location);
-    glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE,
-                          sizeof(float) * 5, (void *) (sizeof(float) * 2));
+    auto program = triangle_program();
+
     while (!glfwWindowShouldClose(window)) {
         float ratio;
         int width, height;
@@ -223,13 +214,12 @@ int main(void)
         ratio = width / (float) height;
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
-        auto angle = float(std::fmod(glfwGetTime(), PI * 2));
-        auto m = glm::rotate(matrix(1.0), angle, glm::vec3(0.0, 0.0, -1.0));
-        auto p = orthogonal_matrix(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-        auto mvp = matrix(1.0) * p * m;
-        glUseProgram(program.get_id());
-        glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat *) glm::value_ptr(mvp));
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+
+        orthogonal_matrix(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
+
+        program.set_z_rotation(float(std::fmod(glfwGetTime(), PI * 2)));
+        program.run(orthogonal_matrix(-ratio, ratio, -1.f, 1.f, 1.f, -1.f));
+
         glfwSwapBuffers(window);
         glfwPollEvents();
     }
