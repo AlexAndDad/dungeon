@@ -5,34 +5,35 @@
 #pragma once
 
 #include "error.hpp"
+#include <type_traits>
+#include "resource.hpp"
 
-namespace opengl
-{
+namespace opengl {
     namespace {
-        const GLchar* to_gl_char(std::string const& str)
+        const GLchar *to_gl_char(std::string const &str)
         {
             return str.c_str();
         }
 
         template<std::size_t N>
-        constexpr const GLchar* to_gl_char(const char(&str)[N])
+        constexpr const GLchar *to_gl_char(const char(&str)[N])
         {
             assert(str);
             return str;
         }
 
-        constexpr const GLchar* to_gl_char(const char* str)
+        constexpr const GLchar *to_gl_char(const char *str)
         {
             assert(str);
             return str;
         }
 
-        GLsizei get_gl_string_length(std::string const& str)
+        GLsizei get_gl_string_length(std::string const &str)
         {
             return str.size();
         }
 
-        GLsizei get_gl_string_length(const char* str)
+        GLsizei get_gl_string_length(const char *str)
         {
             assert(str);
             return std::strlen(str);
@@ -54,20 +55,20 @@ namespace opengl
         };
     };
 
-    struct shader : shader_defs
+    struct shader : shader_defs, resource<shader>
     {
         shader(type shader_type)
-        :ident_{glCreateShader(static_cast<GLenum>(shader_type))}
+            : resource(glCreateShader(static_cast<GLenum>(shader_type)))
         {
-            if (not ident_) check_errors("glCreateShader");
+            if (empty()) check_errors("glCreateShader");
         }
 
         template<class...Sources>
-        shader(type shader_type, Sources&&...sources)
+        shader(type shader_type, Sources &&...sources)
             : shader(shader_type)
         {
             constexpr auto count = sizeof...(sources);
-            const GLchar * sz_sources[] =
+            const GLchar *sz_sources[] =
                 {
                     to_gl_char(sources)...
                 };
@@ -80,50 +81,44 @@ namespace opengl
             check_errors("glCompileShader");
         }
 
-        shader(shader&& other) noexcept
-            : ident_(other.release())
+        static void destroy(GLuint id)
         {
+            glDeleteShader(id);
         }
 
-        shader& operator=(shader&& other) noexcept
+    };
+
+    struct fragment_shader : shader
+    {
+        template
+            <
+                class String,
+                std::enable_if_t
+                    <
+                        not std::is_base_of<shader, std::decay_t<String>>::value
+                    > * = nullptr
+            >
+        fragment_shader(String &&str)
+            : shader(type::fragment, std::forward<String>(str))
         {
-            if (std::addressof(other) != this)
-            {
-                reset(other.release());
-            }
-            return *this;
+
         }
+    };
 
-        void reset(GLuint id = 0) noexcept
-        {
-            glDeleteShader(ident_);
-            ident_ = id;
-        }
+    struct vertex_shader : shader
+    {
+        template
+            <
+                class String,
+                std::enable_if_t
+                    <
+                        not std::is_base_of<shader, std::decay_t<String>>::value
+                    > * = nullptr
+            >
+        vertex_shader(String &&str)
+            : shader(type::vertex, std::forward<String>(str))
+        {}
 
-        GLuint release() noexcept {
-            auto result = ident_;
-            ident_ = 0;
-            return result;
-        }
-
-        void swap(shader& other) noexcept
-        {
-            using std::swap;
-            swap(ident_, other.ident_);
-        }
-
-        ~shader() noexcept
-        {
-            glDeleteShader(release());
-        }
-
-        GLuint get_id() const
-        {
-            return ident_;
-        }
-
-
-        GLuint ident_;
     };
 
 }

@@ -97,8 +97,7 @@ int main()
     return 0;
 }
  */
-#include "opengl/error.hpp"
-#include "opengl/shader.hpp"
+#include "opengl/program.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -109,6 +108,9 @@ int main()
 
 #include <cmath>
 #include <opengl/shader.hpp>
+
+#include "shaders/vertex_shader.glsl.hpp"
+#include "shaders/fragment_shader.glsl.hpp"
 
 static constexpr double PI = 3.141592;
 
@@ -161,34 +163,18 @@ inline glm::mat4 orthogonal_matrix(float l, float r, float b, float t, float n, 
 
 auto make_vertex_shader()
 {
-    return opengl::shader(opengl::shader::type::vertex, R"__(
-uniform mat4 MVP;
-attribute vec3 vCol;
-attribute vec2 vPos;
-varying vec3 color;
-void main()
-{
-    gl_Position = MVP * vec4(vPos, 0.0, 1.0);
-    color = vCol;
-}
-)__");
+    return opengl::shader(opengl::shader::type::vertex, shaders::vertex_shader_glsl);
 }
 
 auto make_fragment_shader()
 {
-    return opengl::shader(opengl::shader::type::fragment, R"__(
-varying vec3 color;
-void main()
-{
-    gl_FragColor = vec4(color, 1.0);
-}
-)__");
+    return opengl::shader(opengl::shader::type::fragment, shaders::fragment_shader_glsl);
 }
 
 int main(void)
 {
     GLFWwindow *window;
-    GLuint vertex_buffer, program;
+    GLuint vertex_buffer;
     GLint mvp_location, vpos_location, vcol_location;
     glfwSetErrorCallback(error_callback);
     if (!glfwInit())
@@ -212,13 +198,17 @@ int main(void)
     auto vertex_shader = make_vertex_shader();
     auto fragment_shader = make_fragment_shader();
 
-    program = glCreateProgram();
-    glAttachShader(program, vertex_shader.get_id());
-    glAttachShader(program, fragment_shader.get_id());
-    glLinkProgram(program);
-    mvp_location = glGetUniformLocation(program, "MVP");
-    vpos_location = glGetAttribLocation(program, "vPos");
-    vcol_location = glGetAttribLocation(program, "vCol");
+    auto program = opengl::program {
+        opengl::vertex_shader(shaders::vertex_shader_glsl),
+        opengl::fragment_shader(shaders::fragment_shader_glsl)
+    };
+//    program = glCreateProgram();
+//    glAttachShader(program, vertex_shader.get_id());
+//    glAttachShader(program, fragment_shader.get_id());
+//    glLinkProgram(program);
+    mvp_location = glGetUniformLocation(program.get_id(), "MVP");
+    vpos_location = glGetAttribLocation(program.get_id(), "vPos");
+    vcol_location = glGetAttribLocation(program.get_id(), "vCol");
     glEnableVertexAttribArray(vpos_location);
     glVertexAttribPointer(vpos_location, 2, GL_FLOAT, GL_FALSE,
                           sizeof(float) * 5, (void *) 0);
@@ -237,7 +227,7 @@ int main(void)
         auto m = glm::rotate(matrix(1.0), angle, glm::vec3(0.0, 0.0, -1.0));
         auto p = orthogonal_matrix(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
         auto mvp = matrix(1.0) * p * m;
-        glUseProgram(program);
+        glUseProgram(program.get_id());
         glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat *) glm::value_ptr(mvp));
         glDrawArrays(GL_TRIANGLES, 0, 3);
         glfwSwapBuffers(window);

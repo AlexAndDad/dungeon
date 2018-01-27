@@ -1,0 +1,5 @@
+namespace shaders {
+
+    extern const char @c_identifier@[@shader_text_length@ + 1] = R"__(@shader_text@)__";
+
+}

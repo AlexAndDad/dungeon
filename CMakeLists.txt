@@ -18,6 +18,7 @@ sugar_include(environment)
 sugar_include(opengl)
 sugar_include(monster_types)
 sugar_include(game_engine)
+sugar_include(shaders)
 add_executable(${my_target} ${SOURCE_FILES})
 
 

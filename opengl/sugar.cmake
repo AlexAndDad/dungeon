@@ -4,5 +4,7 @@ sugar_files(SOURCE_FILES
         error.hpp
         program.cpp
         program.hpp
+        resource.cpp
+        resource.hpp
         shader.cpp
         shader.hpp)

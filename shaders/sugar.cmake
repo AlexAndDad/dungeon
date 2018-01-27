@@ -1,0 +1,18 @@
+sugar_files(SHADER_SOURCES vertex_shader.glsl fragment_shader.glsl)
+sugar_files(SHADER_IN_HPP templates/shader.hpp.in)
+sugar_files(SHADER_IN_CPP templates/shader.cpp.in)
+
+sugar_files(SOURCE_FILES ${SHADER_SOURCES} ${SHADER_IN_HPP} ${SHADER_IN_CPP})
+set_source_files_properties(${SHADER_SOURCES} ${SHADER_IN_HPP} ${SHADER_IN_CPP} PROPERTIES HEADER_ONLY 1)
+
+foreach (shader IN LISTS SHADER_SOURCES)
+    get_filename_component(fname ${shader} NAME)
+    set(hdr "${CMAKE_CURRENT_BINARY_DIR}/shaders/${fname}.hpp")
+    set(src "${CMAKE_CURRENT_BINARY_DIR}/shaders/${fname}.cpp")
+    string(REPLACE "." "_" c_identifier "${fname}")
+    file(READ ${shader} shader_text)
+    string(LENGTH "${shader_text}" shader_text_length)
+    configure_file(${SHADER_IN_HPP} ${hdr} @ONLY)
+    configure_file(${SHADER_IN_CPP} ${src} @ONLY)
+    sugar_files(SOURCE_FILES ${hdr} ${src})
+endforeach ()
