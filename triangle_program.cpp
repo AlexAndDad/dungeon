@@ -5,11 +5,11 @@
 #include "triangle_program.hpp"
 
 triangle_program::triangle_program()
-    : opengl::program(opengl::vertex_shader(shaders::vertex_shader_glsl),
+    : shader_program_(opengl::vertex_shader(shaders::vertex_shader_glsl),
                       opengl::fragment_shader(shaders::fragment_shader_glsl))
-    , mvp_location_{glGetUniformLocation(get_id(), "MVP")}
-    , vpos_location_{glGetAttribLocation(get_id(), "vPos")}
-    , vcol_location_{glGetAttribLocation(get_id(), "vCol")}
+    , mvp_location_{glGetUniformLocation(shader_program_.get_id(), "MVP")}
+    , vpos_location_{glGetAttribLocation(shader_program_.get_id(), "vPos")}
+    , vcol_location_{glGetAttribLocation(shader_program_.get_id(), "vCol")}
 {
     opengl::check_errors("get locations");
 
@@ -30,7 +30,7 @@ void triangle_program::run(mat4 const& view_matrix)
     auto angle = z_angle_;
     auto m = glm::rotate(mat4(1.0), angle, vec3(0.0, 0.0, -1.0));
     auto mvp = mat4(1.0) * view_matrix * m;
-    glUseProgram(get_id());
+    shader_program_.use();
     glUniformMatrix4fv(mvp_location_, 1, GL_FALSE, (const GLfloat *) glm::value_ptr(mvp));
     glDrawArrays(GL_TRIANGLES, 0, 3);
 

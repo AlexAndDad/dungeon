@@ -11,9 +11,8 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-struct triangle_program : opengl::program
+struct triangle_program
 {
-
     using mat4 = glm::mat4;
     using vec3 = glm::vec3;
 
@@ -28,6 +27,7 @@ struct triangle_program : opengl::program
 
     float z_angle_ = 0.0;
 
+    opengl::program shader_program_;
     GLint mvp_location_, vpos_location_, vcol_location_;
 };
 

@@ -97,34 +97,24 @@ int main()
     return 0;
 }
  */
+#include <iostream>
 #include "triangle_program.hpp"
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/trigonometric.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
-#include <glm/mat4x4.hpp>
-
-#include <cmath>
-#include <opengl/shader.hpp>
-
-#include "shaders/vertex_shader.glsl.hpp"
-#include "shaders/fragment_shader.glsl.hpp"
 
 static constexpr double PI = 3.141592;
 
 
 static const struct
 {
-    struct
+    struct moo
     {
         float x, y;
-    } pos;
+    } vPos;
+
     struct
     {
         float r, g, b;
-    } colour;
+    } vCol;
+
 } vertices[] =
     {
         {{-0.6f, -0.4f}, {1.f, 0.f, 0.f}},
@@ -177,7 +167,7 @@ auto make_fragment_shader()
     return opengl::shader(opengl::shader::type::fragment, shaders::fragment_shader_glsl);
 }
 
-int main(void)
+void run()
 {
     GLFWwindow *window;
     GLuint vertex_buffer;
@@ -195,7 +185,7 @@ int main(void)
     glfwSetKeyCallback(window, key_callback);
     glfwMakeContextCurrent(window);
     glewInit();
-    glfwSwapInterval(1);
+    glfwSwapInterval(1);  //1
     // NOTE: OpenGL error checks have been omitted for brevity
     glGenBuffers(1, &vertex_buffer);
     glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
@@ -215,8 +205,6 @@ int main(void)
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        orthogonal_matrix(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
-
         program.set_z_rotation(float(std::fmod(glfwGetTime(), PI * 2)));
         program.run(orthogonal_matrix(-ratio, ratio, -1.f, 1.f, 1.f, -1.f));
 
@@ -225,5 +213,28 @@ int main(void)
     }
     glfwDestroyWindow(window);
     glfwTerminate();
+}
+
+// prints the explanatory string of an exception. If the exception is nested,
+// recurses to print the explanatory of the exception it holds
+void print_exception(const std::exception& e, int level =  0)
+{
+    std::cerr << std::string(level, ' ') << "exception: " << e.what() << '\n';
+    try {
+        std::rethrow_if_nested(e);
+    } catch(const std::exception& e) {
+        print_exception(e, level+1);
+    } catch(...) {}
+}
+
+int main(void)
+{
+    try {
+        run();
+    }
+    catch(std::exception& e)
+    {
+        print_exception(e);
+    }
     exit(EXIT_SUCCESS);
 }
