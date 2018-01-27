@@ -14,6 +14,8 @@ endif ()
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 sugar_files(SOURCE_FILES main.cpp monster.cpp monster.hpp text_vanisher.cpp text_vanisher.hpp)
+sugar_include(environment)
+sugar_include(opengl)
 sugar_include(monster_types)
 sugar_include(game_engine)
 add_executable(${my_target} ${SOURCE_FILES})
