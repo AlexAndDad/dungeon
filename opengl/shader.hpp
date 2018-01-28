@@ -9,6 +9,7 @@
 #include "resource.hpp"
 
 namespace opengl {
+
     namespace {
         const GLchar *to_gl_char(std::string const &str)
         {
@@ -55,12 +56,36 @@ namespace opengl {
         };
     };
 
-    struct shader : shader_defs, resource<shader>
+
+    struct shader_service : shader_defs, basic_resource_service<shader_service, GLuint>
+    {
+
+        static auto construct(type shader_type) -> implementation_type
+        {
+            auto ident = glCreateShader(static_cast<GLenum>(shader_type));
+            if (not ident) {
+                check_errors("glCreateShader");
+                assert(!"should not get here");
+            }
+            return ident;
+        }
+
+
+        static auto destroy(implementation_type &impl) -> void
+        {
+            if (impl)
+                glDeleteShader(impl);
+            impl = 0;
+        }
+
+    };
+
+
+    struct shader : shader_defs, resource_object<shader_service>
     {
         shader(type shader_type)
-            : resource(glCreateShader(static_cast<GLenum>(shader_type)))
+            : resource_object<shader_service>(std::piecewise_construct, shader_type)
         {
-            if (empty()) check_errors("glCreateShader");
         }
 
         template<class...Sources>
@@ -75,15 +100,10 @@ namespace opengl {
             const GLint lengths[] = {
                 get_gl_string_length(sources)...
             };
-            glShaderSource(get_id(), count, sz_sources, lengths);
+            glShaderSource(get_implementation(), count, sz_sources, lengths);
             check_errors("glShaderSource");
-            glCompileShader(get_id());
+            glCompileShader(get_implementation());
             check_errors("glCompileShader");
-        }
-
-        static void destroy(GLuint id)
-        {
-            glDeleteShader(id);
         }
 
     };

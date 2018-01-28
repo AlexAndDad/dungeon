@@ -13,81 +13,38 @@
 namespace opengl
 {
 
-    struct buffer_init
+    struct program_service : basic_resource_service<program_service, GLuint>
     {
-        GLuint buffer_type;
-        struct {
-
-        };
-        void* buffer_data;
-    };
-
-    struct buffer_item
-    {
-        GLuint buffer_type;
-        GLuint buffer_ident;
-    };
-
-    struct buffers
-    {
-        template<class...BufferInit>
-        buffers(std::initializer_list<buffer_init> inits)
-            : buffers_(inits.size())
+        static auto construct() -> implementation_type
         {
-            /*
-            const auto size = buffers_.size();
-            auto idents = generate_buffers(size);
-
-            auto first = boost::make_zip_iterator(std::begin(inits), std::begin(std::begin(idents), std::begin(buffers_));
-            auto last = boost::make_zip_iterator(std::end(inits), std::end(idents), std::end(buffers_));
-            for( ; first != last ; ++first)
-            {
-                auto& init = boost::get<0>(*first);
-                auto& ident = boost::get<1>(*first);
-                auto& buffer = boost::get<2>(*first);
-                buffer.buffer_ident = ident;
-                buffer.buffer_type = init.buffer_type;
-                glBindBuffer(buffer.buffer_type, ident);
-                glBufferData(buffer.buffer_type, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-            }
-             */
-        }
-
-
-        auto generate_buffers(std::size_t N) -> std::vector<GLuint>
-        {
-            auto result = std::vector<GLuint>(N);
-            glGenBuffers(N, result.data());
-            opengl::check_errors("glGenBuffers");
+            auto result = glCreateProgram();
+            check_errors("glCreateProgram");
             return result;
         }
 
+        static void destroy(implementation_type& id)
+        {
+            glDeleteProgram(id);
+            id = 0;
+        }
 
 
-        std::vector<buffer_item> buffers_;
     };
 
-    struct program : resource<program>
+    struct program : resource_object<program_service>
     {
-        program()
-            : resource(glCreateProgram())
-        {
-            check_errors("glCreateProgram");
-        }
 
-        void use()
-        {
-            glUseProgram(get_id());
-            opengl::check_errors("glUseProgram");
-        }
+        program()
+            : resource_object<program_service>(std::piecewise_construct)
+        {}
+
 
         template<class...Shaders>
         program(shader const& shader0, Shaders&&...shaderN)
-            : resource(glCreateProgram())
+            : program()
         {
             attach_shaders(shader0, std::forward<Shaders>(shaderN)...);
-            glLinkProgram(get_id());
+            glLinkProgram(get_implementation());
             check_errors("glLinkProgram");
         }
 
@@ -96,15 +53,17 @@ namespace opengl
         {
             using expand = int[];
             void(expand{0,
-                        (glAttachShader(get_id(), shaders.get_id()),0)...
+                        (glAttachShader(get_implementation(), shaders.get_implementation()),0)...
             });
             check_errors("glAttachShader");
         }
 
-        static void destroy(GLuint id)
+        void use()
         {
-            glDeleteProgram(id);
+            glUseProgram(get_implementation());
+            opengl::check_errors("glUseProgram");
         }
+
     };
 
 }

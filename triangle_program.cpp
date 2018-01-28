@@ -7,9 +7,9 @@
 triangle_program::triangle_program()
     : shader_program_(opengl::vertex_shader(shaders::vertex_shader_glsl),
                       opengl::fragment_shader(shaders::fragment_shader_glsl))
-    , mvp_location_{glGetUniformLocation(shader_program_.get_id(), "MVP")}
-    , vpos_location_{glGetAttribLocation(shader_program_.get_id(), "vPos")}
-    , vcol_location_{glGetAttribLocation(shader_program_.get_id(), "vCol")}
+    , mvp_location_{glGetUniformLocation(shader_program_.get_implementation(), "MVP")}
+    , vpos_location_{glGetAttribLocation(shader_program_.get_implementation(), "vPos")}
+    , vcol_location_{glGetAttribLocation(shader_program_.get_implementation(), "vCol")}
 {
     opengl::check_errors("get locations");
 

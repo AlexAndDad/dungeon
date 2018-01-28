@@ -99,6 +99,7 @@ int main()
  */
 #include <iostream>
 #include "triangle_program.hpp"
+#include "opengl/buffers.hpp"
 
 static constexpr double PI = 3.141592;
 
@@ -187,9 +188,10 @@ void run()
     glewInit();
     glfwSwapInterval(1);  //1
     // NOTE: OpenGL error checks have been omitted for brevity
-    glGenBuffers(1, &vertex_buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    auto vertex_buf = opengl::buffers {opengl::array_buffer(vertices, opengl::buffer_usage::static_draw)};
+//    glGenBuffers(1, &vertex_buffer);
+//    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
+//    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     auto vertex_shader = make_vertex_shader();
     auto fragment_shader = make_fragment_shader();
@@ -217,14 +219,14 @@ void run()
 
 // prints the explanatory string of an exception. If the exception is nested,
 // recurses to print the explanatory of the exception it holds
-void print_exception(const std::exception& e, int level =  0)
+void print_exception(const std::exception &e, int level = 0)
 {
     std::cerr << std::string(level, ' ') << "exception: " << e.what() << '\n';
     try {
         std::rethrow_if_nested(e);
-    } catch(const std::exception& e) {
-        print_exception(e, level+1);
-    } catch(...) {}
+    } catch (const std::exception &e) {
+        print_exception(e, level + 1);
+    } catch (...) {}
 }
 
 int main(void)
@@ -232,8 +234,7 @@ int main(void)
     try {
         run();
     }
-    catch(std::exception& e)
-    {
+    catch (std::exception &e) {
         print_exception(e);
     }
     exit(EXIT_SUCCESS);
