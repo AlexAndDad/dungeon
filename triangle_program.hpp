@@ -10,6 +10,43 @@
 #include "glm/glm.hpp"
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "opengl/buffers.hpp"
+
+struct xy_colour
+{
+    struct
+    {
+        float x, y;
+    } vPos;
+
+    struct
+    {
+        float r, g, b;
+    } vCol;
+};
+
+struct triangle_buffers
+{
+    template<std::size_t N>
+    triangle_buffers(const xy_colour (&src)[N])
+        : buffers_(opengl::array_buffer(src, opengl::buffer_usage::static_draw))
+        , size_(N)
+    {}
+
+    std::size_t size() const
+    {
+        return size_;
+    }
+
+    void bind() const
+    {
+        buffers_.bind();
+    }
+
+private:
+    opengl::buffers buffers_;
+    std::size_t size_;
+};
 
 struct triangle_program
 {
@@ -23,7 +60,7 @@ struct triangle_program
         z_angle_ = val;
     }
 
-    void run(mat4 const& view_matrix);
+    void run(mat4 const &view_matrix, const triangle_buffers &buffers);
 
     float z_angle_ = 0.0;
 

@@ -13,6 +13,11 @@ triangle_program::triangle_program()
 {
     opengl::check_errors("get locations");
 
+}
+
+
+void triangle_program::run(mat4 const& view_matrix, const triangle_buffers& buffers)
+{
     glEnableVertexAttribArray(vpos_location_);
     glVertexAttribPointer(vpos_location_, 2, GL_FLOAT, GL_FALSE,
                           sizeof(float) * 5, (void *) 0);
@@ -22,16 +27,13 @@ triangle_program::triangle_program()
     glVertexAttribPointer(vcol_location_, 3, GL_FLOAT, GL_FALSE,
                           sizeof(float) * 5, (void *) (sizeof(float) * 2));
     opengl::check_errors("vcol array setup");
-}
 
-
-void triangle_program::run(mat4 const& view_matrix)
-{
     auto angle = z_angle_;
     auto m = glm::rotate(mat4(1.0), angle, vec3(0.0, 0.0, -1.0));
     auto mvp = mat4(1.0) * view_matrix * m;
+    buffers.bind();
     shader_program_.use();
     glUniformMatrix4fv(mvp_location_, 1, GL_FALSE, (const GLfloat *) glm::value_ptr(mvp));
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    glDrawArrays(GL_TRIANGLES, 0, buffers.size());
 
 }

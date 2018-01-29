@@ -100,27 +100,29 @@ int main()
 #include <iostream>
 #include "triangle_program.hpp"
 #include "opengl/buffers.hpp"
+#include <boost/asio.hpp>
 
 static constexpr double PI = 3.141592;
 
 
-static const struct
-{
-    struct moo
-    {
-        float x, y;
-    } vPos;
 
-    struct
+const xy_colour vertices[] =
     {
-        float r, g, b;
-    } vCol;
+        {{-0.6f, -0.6f}, {1.f, 0.f, 0.f}},
+        {{+0.6f, +0.0f}, {0.f, 1.f, 0.f}},
+        {{-0.6f, +0.6f},  {0.f, 0.f, 1.f}}
+    };
 
-} vertices[] =
+const xy_colour vertices2[] =
     {
-        {{-0.6f, -0.4f}, {1.f, 0.f, 0.f}},
-        {{0.6f,  -0.4f}, {0.f, 1.f, 0.f}},
-        {{0.f,   0.6f},  {0.f, 0.f, 1.f}}
+        {{-0.6f, -0.6f}, {1.f, 1.f, 0.f}},
+        {{-0.6f, +0.6f}, {0.f, 1.f, 0.f}},
+        {{+0.6f, +0.6f},  {0.f, 0.f, 1.f}},
+
+        {{-0.6f, -0.6f}, {1.f, 1.f, 0.f}},
+        {{+0.6f, -0.6f}, {1.f, 0.f, 1.f}},
+        {{+0.6f, +0.6f},  {0.f, 0.f, 1.f}},
+
     };
 
 static void error_callback(int error, const char *description)
@@ -168,6 +170,25 @@ auto make_fragment_shader()
     return opengl::shader(opengl::shader::type::fragment, shaders::fragment_shader_glsl);
 }
 
+namespace asio {
+    using namespace boost::asio;
+    using namespace boost::system;
+}
+
+bool flip = false;
+
+void start_flipper(asio::system_timer &timer)
+{
+    using namespace std::literals;
+    timer.expires_from_now(1s);
+    timer.async_wait([&timer](asio::error_code const &ec) {
+        if (ec == asio::error_code()) {
+            flip = not flip;
+            start_flipper(timer);
+        }
+    });
+}
+
 void run()
 {
     GLFWwindow *window;
@@ -187,8 +208,15 @@ void run()
     glfwMakeContextCurrent(window);
     glewInit();
     glfwSwapInterval(1);  //1
+
+    asio::io_context executor;
+    asio::system_timer timer(executor);
+    start_flipper(timer);
+
+
     // NOTE: OpenGL error checks have been omitted for brevity
-    auto vertex_buf = opengl::buffers {opengl::array_buffer(vertices, opengl::buffer_usage::static_draw)};
+    auto vertex_buf = triangle_buffers(vertices);
+    auto vertex_buf2 = triangle_buffers(vertices2);
 //    glGenBuffers(1, &vertex_buffer);
 //    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
 //    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
@@ -208,11 +236,18 @@ void run()
         glClear(GL_COLOR_BUFFER_BIT);
 
         program.set_z_rotation(float(std::fmod(glfwGetTime(), PI * 2)));
-        program.run(orthogonal_matrix(-ratio, ratio, -1.f, 1.f, 1.f, -1.f));
+        program.run(orthogonal_matrix(-ratio, ratio, -1.f, 1.f, 1.f, -1.f),
+                    flip ? vertex_buf2 : vertex_buf);
+
+//        program.set_z_rotation(float(std::fmod(glfwGetTime(), PI * 2 + 0.6)));
+//        program.run(orthogonal_matrix(-ratio, ratio, -1.f, 1.f, 1.f, -1.f),
+//                    flip ? vertex_buf : vertex_buf2);
 
         glfwSwapBuffers(window);
+        executor.poll();
         glfwPollEvents();
     }
+    timer.cancel();
     glfwDestroyWindow(window);
     glfwTerminate();
 }
