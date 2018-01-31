@@ -6,6 +6,7 @@
 
 #include "config.hpp"
 #include <utility>
+#include <vector>
 
 namespace opengl {
 

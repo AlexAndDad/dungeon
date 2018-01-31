@@ -7,6 +7,7 @@
 #include "error.hpp"
 #include <type_traits>
 #include "resource.hpp"
+#include <cstring>
 
 namespace opengl {
 

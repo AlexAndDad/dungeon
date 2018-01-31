@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.6)
 include(external_packages/Init.cmake)
 project(dungeon)
 
-hunter_add_package(Sugar)
-find_package(Sugar CONFIG REQUIRED)
+hunter_add_package(sugar)
+find_package(sugar CONFIG REQUIRED)
 
 set(my_target dungeon)
 
