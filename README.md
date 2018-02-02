@@ -38,3 +38,6 @@ See here (about halfway down): https://www.jetbrains.com/help/clion/quick-tutori
 
 Then, with luck, you can open the dungeon project in clion and compile.
 
+If that fails, leave off the -G"CodeBlocks - NMake Makefiles" part and open the resuling solution in visual studio :(
+
+)
