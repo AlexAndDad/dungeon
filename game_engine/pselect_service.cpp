@@ -8,7 +8,11 @@
 #include "executor_error.hpp"
 #include "game_engine/deadline_timer_/deadline_timer_service.hpp"
 
+#ifndef WIN32
 #include <sys/select.h>
+#else
+#include <winsock.h>
+#endif
 #include <csignal>
 #include <vector>
 #include <functional>
@@ -192,11 +196,15 @@ namespace game_engine {
                 auto tp = timeout_.to_ptr();
 
                 if (rp or wp or ep or tp) {
+#ifdef WIN32
+					returtn 0;
+#else
                     return result {
                         pselect(highest_fd_ + 1, reads_.to_ptr(), writes_.to_ptr(), excepts_.to_ptr(),
                                 timeout_.to_ptr(),
                                 sigmask_.to_ptr())
                     };
+#endif
                 } else {
                     return result(std::error_code(executor_error::nothing_to_wait_for));
                 }

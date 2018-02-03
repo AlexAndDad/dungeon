@@ -13,11 +13,12 @@ endif ()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-sugar_files(SOURCE_FILES main.cpp monster.cpp monster.hpp text_vanisher.cpp text_vanisher.hpp triangle_program.cpp triangle_program.hpp)
-sugar_include(environment)
+#sugar_files(SOURCE_FILES main.cpp monster.cpp monster.hpp text_vanisher.cpp text_vanisher.hpp triangle_program.cpp triangle_program.hpp)
+sugar_files(SOURCE_FILES main.cpp monster.cpp monster.hpp triangle_program.cpp triangle_program.hpp)
+sugar_include(environment)	
 sugar_include(opengl)
 sugar_include(monster_types)
-sugar_include(game_engine)
+#sugar_include(game_engine)
 sugar_include(shaders)
 add_executable(${my_target} ${SOURCE_FILES})
 
@@ -46,3 +47,4 @@ target_link_libraries(${my_target} PUBLIC glew::glew)
 hunter_add_package(glfw)
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(${my_target} PUBLIC glfw)
+
