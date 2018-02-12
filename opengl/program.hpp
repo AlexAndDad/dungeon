@@ -17,12 +17,12 @@
 namespace opengl
 {
 
-    struct program : resource_object<program_service>
+    struct program : basic_resource_object<program_service>
     {
         struct binary;
 
         program()
-            : resource_object<program_service>(std::piecewise_construct)
+            : basic_resource_object<program_service>(std::piecewise_construct)
         {}
 
 

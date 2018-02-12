@@ -6,7 +6,7 @@
 
 #include "opengl/config.hpp"
 #include "opengl/error.hpp"
-#include "resource.hpp"
+#include "basic_resource_object.hpp"
 #include <vector>
 #include <initializer_list>
 #include <boost/iterator/zip_iterator.hpp>
@@ -115,7 +115,7 @@ namespace opengl {
     };
 
     /// @todo misunderstanding of bound buffers
-    struct buffers : resource_object<buffers_service>
+    struct buffers : basic_resource_object<buffers_service>
     {
         buffers(std::size_t N);
 

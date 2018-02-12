@@ -7,7 +7,7 @@
 
 #pragma once
 
-#include "resource.hpp"
+#include "basic_resource_object.hpp"
 #include "shader_type.hpp"
 #include "error.hpp"
 

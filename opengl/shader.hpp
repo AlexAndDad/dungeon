@@ -7,7 +7,7 @@
 #include "error.hpp"
 #include "shader_type.hpp"
 #include <type_traits>
-#include "resource.hpp"
+#include "basic_resource_object.hpp"
 #include <cstring>
 #include "detail/gl_string.hpp"
 #include "shader_service.hpp"
@@ -16,10 +16,10 @@ namespace opengl {
 
 
     /// The representation of some kind of shader
-    struct shader : resource_object<shader_service>
+    struct shader : basic_resource_object<shader_service>
     {
         shader(shader_type type)
-            : resource_object<shader_service>(std::piecewise_construct, type)
+            : basic_resource_object<shader_service>(std::piecewise_construct, type)
         {
         }
 

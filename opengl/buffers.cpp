@@ -26,7 +26,7 @@ namespace opengl {
     }
 
     buffers::buffers(std::size_t N)
-        : resource_object<buffers_service>(std::piecewise_construct, N)
+        : basic_resource_object<buffers_service>(std::piecewise_construct, N)
     {}
 
     buffers::buffers(buffer_init const &bi)

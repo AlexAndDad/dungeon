@@ -7,7 +7,7 @@
 #pragma once
 
 #include <GL/glew.h>
-#include "resource.hpp"
+#include "basic_resource_object.hpp"
 
 namespace opengl {
 
