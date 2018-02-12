@@ -13,9 +13,6 @@ namespace opengl
     {
         invalid_value  = GL_INVALID_VALUE,
         invalid_operation = GL_INVALID_OPERATION,
-
-        custom_errors = 10000000,
-        shader_creation_error
     };
 
 

@@ -18,14 +18,10 @@ namespace opengl {
     std::string category_type::message(int code) const
     {
         switch (static_cast<error>(code)) {
-            case error::custom_errors:
-                return "custom_errors - you should not see this";
             case error::invalid_operation:
                 return "invalid operation";
             case error::invalid_value:
                 return "invalid value";
-            case error::shader_creation_error:
-                return "shader creation error";
         }
         assert(!"incomplete error table");
         return "unknown";
