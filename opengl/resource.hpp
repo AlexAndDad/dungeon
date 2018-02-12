@@ -97,6 +97,13 @@ namespace opengl {
             return get_service().empty(get_implementation());
         }
 
+        auto native_handle() const -> implementation_type const&
+        {
+            return get_implementation();
+        }
+
+    protected:
+
         auto get_implementation() & -> implementation_type &
         { return impl_; }
 

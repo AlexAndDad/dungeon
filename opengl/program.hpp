@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "program_service.hpp"
 #include "shader.hpp"
 #include <vector>
 #include <array>
@@ -11,27 +12,10 @@
 #include <boost/iterator/zip_iterator.hpp>
 #include <cstdint>
 #include <cstddef>
+#include <initializer_list>
 
 namespace opengl
 {
-
-    struct program_service : basic_resource_service<program_service, GLuint>
-    {
-        static auto construct() -> implementation_type
-        {
-            auto result = glCreateProgram();
-            check_errors("glCreateProgram");
-            return result;
-        }
-
-        static void destroy(implementation_type& id)
-        {
-            glDeleteProgram(id);
-            id = 0;
-        }
-
-
-    };
 
     struct program : resource_object<program_service>
     {
@@ -56,7 +40,7 @@ namespace opengl
         {
             using expand = int[];
             void(expand{0,
-                        (glAttachShader(get_implementation(), shaders.get_implementation()),0)...
+                        (glAttachShader(native_handle(), shaders.native_handle()),0)...
             });
             check_errors("glAttachShader");
         }
