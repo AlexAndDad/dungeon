@@ -11,6 +11,12 @@
 
 namespace opengl {
 
+    struct program_compilation_failed : std::runtime_error
+    {
+        using std::runtime_error::runtime_error;
+    };
+
+
     /// A service object which provides the construct and destroy specialisations for GL program objects
     struct program_service : basic_resource_service<program_service, GLuint>
     {
@@ -22,6 +28,13 @@ namespace opengl {
         /// @post id will be zero
         /// @note if id is zero at the point of the call, this operation is a NOP
         static void destroy(implementation_type &id);
+
+        static auto compiled(implementation_type const &impl) -> bool;
+
+        static std::size_t log_length(implementation_type const &impl);
+
+        static std::string log(implementation_type const &impl);
+
     };
 
 }

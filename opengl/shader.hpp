@@ -11,9 +11,14 @@
 #include <cstring>
 #include "detail/gl_string.hpp"
 #include "shader_service.hpp"
+#include <stdexcept>
 
 namespace opengl {
 
+    struct shader_compilation_failed : std::runtime_error
+    {
+        using std::runtime_error::runtime_error;
+    };
 
     /// The representation of some kind of shader
     struct shader : basic_resource_object<shader_service>
@@ -38,10 +43,13 @@ namespace opengl {
                 detail::get_gl_string_length(sources)...
             };
 
-            glShaderSource(get_implementation(), count, sz_sources, lengths);
-            check_errors("glShaderSource");
-            glCompileShader(get_implementation());
-            check_errors("glCompileShader");
+            glShaderSource(native_handle(), count, sz_sources, lengths);
+            glCompileShader(native_handle());
+            check_errors("shader::shader");
+            if( not compiled())
+            {
+                throw shader_compilation_failed(log());
+            }
         }
 
         /// Return the source code for this shader object, if it has any

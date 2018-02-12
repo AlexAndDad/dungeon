@@ -33,6 +33,8 @@ namespace opengl
             attach_shaders(shader0, std::forward<Shaders>(shaderN)...);
             glLinkProgram(get_implementation());
             check_errors("glLinkProgram");
+            if (not compiled())
+                throw program_compilation_failed(log());
         }
 
         template<class...Shaders>
@@ -50,6 +52,10 @@ namespace opengl
             glUseProgram(get_implementation());
             opengl::check_errors("glUseProgram");
         }
+
+        auto compiled() const -> bool;
+
+        auto log() const -> std::string;
 
         auto get_binary() const -> binary;
 

@@ -27,6 +27,15 @@ namespace opengl {
         /// @post impl shall contain 0
         ///
         static auto destroy(implementation_type &impl) -> void;
+
+
+        static std::size_t log_length(implementation_type const &impl);
+
+        static std::string log(implementation_type const &impl);
+
+        static std::size_t source_length(implementation_type const &impl);
+
+        static std::string source(implementation_type const &impl);
     };
 
 }

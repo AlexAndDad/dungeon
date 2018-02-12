@@ -24,6 +24,17 @@ namespace opengl
     , data_()
     {}
 
+    auto program::compiled() const -> bool
+    {
+        return get_service().compiled(get_implementation());
+    }
+
+
+    auto program::log() const -> std::string
+    {
+        return get_service().log(get_implementation());
+    }
+
     auto program::binary::prepare(std::size_t length) -> prepare_args
     {
         data_.resize(length);
@@ -33,6 +44,7 @@ namespace opengl
                 GLsizei(length)
         };
     }
+
 
     void program::binary::report(std::ostream& os) const
     {
