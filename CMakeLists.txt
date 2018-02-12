@@ -64,4 +64,20 @@ if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
     if (compiler_lke_gcc)
         target_compile_options(${my_target} PRIVATE -Wall -Wextra)
     endif ()
-endif()
+endif ()
+
+
+# documentation
+find_package(Doxygen QUIET)
+if (DOXYGEN_FOUND)
+    include(sugar_status_print)
+    include(sugar_doxygen_generate)
+    sugar_doxygen_generate(DEVELOPER
+            TARGET ${my_target}
+            DOXYTARGET "${my_target}-doc"
+            DOXYFILE ${CMAKE_CURRENT_LIST_DIR}/doc/Doxyfile.in)
+    add_custom_target(build-docs ALL DEPENDS "${my_target}-doc")
+else ()
+    message(STATUS "Doxygen not found. Skipping documentation targets")
+    message(STATUS "Consider $ sudo dnf install doxygen")
+endif ()
