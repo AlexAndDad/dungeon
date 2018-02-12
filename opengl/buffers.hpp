@@ -10,65 +10,9 @@
 #include <vector>
 #include <initializer_list>
 #include <boost/iterator/zip_iterator.hpp>
+#include "buffer_implementation.hpp"
 
 namespace opengl {
-
-    enum class buffer_usage : GLenum
-    {
-        static_draw = GL_STATIC_DRAW
-    };
-
-    enum class buffer_target : GLenum
-    {
-        array = GL_ARRAY_BUFFER
-    };
-
-    struct buffer_init
-    {
-        buffer_target target;
-        std::size_t size;
-        void const *data;
-        buffer_usage usage;
-    };
-
-    template<class T, std::size_t N>
-    constexpr auto array_buffer(const T (&data)[N], buffer_usage usage) -> buffer_init
-    {
-        return buffer_init {buffer_target::array,
-                            sizeof(data),
-                            data,
-                            usage};
-    };
-
-
-
-    struct buffer_implementation
-    {
-        buffer_implementation(std::size_t N)
-            : idents(N)
-            , targets(N)
-        {}
-
-        std::vector<GLuint> idents;
-        std::vector<buffer_target> targets;
-
-        auto empty() const { return idents.empty(); }
-
-        friend void clear(buffer_implementation& impl)
-        {
-            impl.idents.clear();
-            impl.targets.clear();
-        }
-
-        friend void swap(buffer_implementation& l, buffer_implementation& r) noexcept
-        {
-            using std::swap;
-            swap(l.idents, r.idents);
-            swap(l.targets, r.targets);
-        }
-
-    };
-
 
     struct buffers_service
     {

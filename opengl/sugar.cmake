@@ -1,5 +1,6 @@
 sugar_files(SOURCE_FILES
         config.hpp
+        buffer_implementation.cpp buffer_implementation.hpp
         buffers.cpp buffers.hpp
         error.cpp
         error.hpp
@@ -11,3 +12,5 @@ sugar_files(SOURCE_FILES
         shader.hpp
         shader_service.cpp shader_service.hpp
         shader_type.cpp shader_type.hpp)
+
+sugar_include(detail)
