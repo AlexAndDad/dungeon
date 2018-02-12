@@ -5,6 +5,7 @@
 #pragma once
 
 #include "error.hpp"
+#include "shader_type.hpp"
 #include <type_traits>
 #include "resource.hpp"
 #include <cstring>
@@ -30,34 +31,34 @@ namespace opengl {
             return str;
         }
 
-        GLsizei get_gl_string_length(std::string const &str)
+        GLint get_gl_string_length(std::string const &str)
         {
-            return str.size();
+            return GLint(str.size());
         }
 
-        GLsizei get_gl_string_length(const char *str)
+        GLint get_gl_string_length(const char *str)
         {
             assert(str);
-            return std::strlen(str);
+            return GLint(std::strlen(str));
         }
 
         template<std::size_t N>
-        constexpr GLsizei get_gl_string_length(const char(&str)[N])
+        constexpr GLint get_gl_string_length(const char(&str)[N])
         {
-            return N;
+            return GLint(N);
         }
 
     }
+
+
+
     struct shader_defs
     {
-        enum class type
-        {
-            vertex = GL_VERTEX_SHADER,
-            fragment = GL_FRAGMENT_SHADER
-        };
+        using type = shader_type;
     };
 
 
+    /// An object which provides resource management services to a shader object
     struct shader_service : shader_defs, basic_resource_service<shader_service, GLuint>
     {
 
@@ -82,6 +83,7 @@ namespace opengl {
     };
 
 
+    /// The representation of some kind of shader
     struct shader : shader_defs, resource_object<shader_service>
     {
         shader(type shader_type)
@@ -107,6 +109,17 @@ namespace opengl {
             check_errors("glCompileShader");
         }
 
+        /// Return the source code for this shader object, if it has any
+        auto source() const -> std::string;
+
+        /// Return the shader type
+        auto type() const -> shader_type;
+
+        /// Check whether the shader has compiled
+        auto compiled() const -> bool;
+
+        /// Return the log text associated with this shader
+        auto log() const -> std::string;
     };
 
     struct fragment_shader : shader
@@ -129,15 +142,31 @@ namespace opengl {
     struct vertex_shader : shader
     {
         template
-            <
-                class String,
-                std::enable_if_t
-                    <
-                        not std::is_base_of<shader, std::decay_t<String>>::value
-                    > * = nullptr
-            >
+                <
+                        class String,
+                        std::enable_if_t
+                                <
+                                        not std::is_base_of<shader, std::decay_t<String>>::value
+                                > * = nullptr
+                >
         vertex_shader(String &&str)
-            : shader(type::vertex, std::forward<String>(str))
+                : shader(type::vertex, std::forward<String>(str))
+        {}
+
+    };
+
+    struct geometry_shader : shader
+    {
+        template
+                <
+                        class String,
+                        std::enable_if_t
+                                <
+                                        not std::is_base_of<shader, std::decay_t<String>>::value
+                                > * = nullptr
+                >
+        geometry_shader(String &&str)
+                : shader(type::vertex, std::forward<String>(str))
         {}
 
     };

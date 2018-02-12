@@ -6,9 +6,8 @@ include(HunterGate)
 option(HUNTER_STATUS_DEBUG "Hunter debug info" OFF)
 option(HUNTER_STATUS_PRINT "Print working status" ON)
 HunterGate(
-        URL "https://github.com/ruslo/hunter/archive/v0.19.240.tar.gz"
-        SHA1 "aa3cd9c45391d8bd14441971b00a43c05d40347c"
-        LOCAL
+        URL "https://github.com/ruslo/hunter/archive/v0.20.5.tar.gz"
+        SHA1 "9f5eb722cbd9068f3d21a43b07832f8cc41336a1"
 )
 
 if ("${CMAKE_SOURCE_DIR}/external_packages" STREQUAL "${CMAKE_CURRENT_LIST_DIR}")

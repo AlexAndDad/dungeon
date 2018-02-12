@@ -9,6 +9,8 @@
 #include <array>
 #include <algorithm>
 #include <boost/iterator/zip_iterator.hpp>
+#include <cstdint>
+#include <cstddef>
 
 namespace opengl
 {
@@ -33,6 +35,7 @@ namespace opengl
 
     struct program : resource_object<program_service>
     {
+        struct binary;
 
         program()
             : resource_object<program_service>(std::piecewise_construct)
@@ -64,8 +67,29 @@ namespace opengl
             opengl::check_errors("glUseProgram");
         }
 
+        auto get_binary() const -> binary;
+
     };
 
+    struct program::binary
+    {
+        struct prepare_args
+        {
+            GLenum* format_ptr;
+            std::uint8_t* buffer_ptr;
+            GLsizei size;
+        };
+
+        binary();
+
+        auto prepare(std::size_t size) -> prepare_args;
+
+        void report(std::ostream& os) const;
+
+    private:
+        GLenum format_;
+        std::vector<std::uint8_t> data_;
+    };
 }
 
 

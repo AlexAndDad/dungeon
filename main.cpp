@@ -222,9 +222,15 @@ void run()
 //    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     auto vertex_shader = make_vertex_shader();
+    std::cout << "vertex shader type: " << vertex_shader.type() << "\nsource:\n" << vertex_shader.source();
+    std::cout << "\ncompiled: " << vertex_shader.compiled();
+    std::cout << "\nlog:\n" << vertex_shader.log() << std::endl;
+
     auto fragment_shader = make_fragment_shader();
 
     auto program = triangle_program();
+
+    program.shader_program_.get_binary().report(std::cout);
 
     while (!glfwWindowShouldClose(window)) {
         float ratio;

@@ -13,12 +13,11 @@ endif ()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
-#sugar_files(SOURCE_FILES main.cpp monster.cpp monster.hpp text_vanisher.cpp text_vanisher.hpp triangle_program.cpp triangle_program.hpp)
 sugar_files(SOURCE_FILES main.cpp monster.cpp monster.hpp triangle_program.cpp triangle_program.hpp)
-sugar_include(environment)	
+sugar_include(environment)
 sugar_include(opengl)
 sugar_include(monster_types)
-#sugar_include(game_engine)
+sugar_include(game_engine)
 sugar_include(shaders)
 add_executable(${my_target} ${SOURCE_FILES})
 
@@ -36,7 +35,9 @@ add_executable(${my_target} ${SOURCE_FILES})
 include(AddBoost)
 AddBoost(TARGETS ${my_target} PRIVATE COMPONENTS system)
 
-hunter_add_package(glm)
+if (NOT DEFINED glm_ROOT)
+    hunter_add_package(glm)
+endif ()
 find_package(glm CONFIG REQUIRED)
 target_link_libraries(${my_target} PUBLIC glm)
 
@@ -48,3 +49,19 @@ hunter_add_package(glfw)
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(${my_target} PUBLIC glfw)
 
+
+set(compiler_like_gcc 0)
+if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
+    set(compiler_like_gcc 1)
+    message(STATUS "Compiler is ${CMAKE_CXX_COMPILER_ID} - like gcc")
+endif ()
+
+if (compiler_like_gcc)
+    target_compile_definitions(${my_target} PUBLIC _DEFAULT_SOURCE=1)
+endif ()
+
+if (${CMAKE_BUILD_TYPE} STREQUAL Debug)
+    if (compiler_lke_gcc)
+        target_compile_options(${my_target} PRIVATE -Wall -Wextra)
+    endif ()
+endif()
