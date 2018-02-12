@@ -162,12 +162,12 @@ inline glm::mat4 orthogonal_matrix(float l, float r, float b, float t, float n, 
 
 auto make_vertex_shader()
 {
-    return opengl::shader(opengl::shader::type::vertex, shaders::vertex_shader_glsl);
+    return opengl::shader(opengl::shader_type::vertex, shaders::vertex_shader_glsl);
 }
 
 auto make_fragment_shader()
 {
-    return opengl::shader(opengl::shader::type::fragment, shaders::fragment_shader_glsl);
+    return opengl::shader(opengl::shader_type::fragment, shaders::fragment_shader_glsl);
 }
 
 namespace asio {

@@ -5,13 +5,12 @@
 #include "shader.hpp"
 
 
-namespace opengl
-{
+namespace opengl {
 
     auto shader::compiled() const -> bool
     {
         GLint result = GL_FALSE;
-        glGetShaderiv(get_implementation(), GL_COMPILE_STATUS, & result);
+        glGetShaderiv(get_implementation(), GL_COMPILE_STATUS, &result);
         return result == GL_TRUE;
     }
 

@@ -9,4 +9,5 @@ sugar_files(SOURCE_FILES
         resource.hpp
         shader.cpp
         shader.hpp
+        shader_service.cpp shader_service.hpp
         shader_type.cpp shader_type.hpp)
