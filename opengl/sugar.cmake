@@ -12,6 +12,7 @@ sugar_files(SOURCE_FILES
         shader.cpp
         shader.hpp
         shader_service.cpp shader_service.hpp
-        shader_type.cpp shader_type.hpp)
+        shader_type.cpp shader_type.hpp
+        texture.hpp texture.cpp)
 
 sugar_include(detail)

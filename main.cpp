@@ -1,127 +1,34 @@
-/*
-#include <iostream>
-#include <sstream>
-#include <vector>
-#include <cassert>
-#include <memory>
-#include <thread>
 
-#include "monster_types/all.hpp"
-#include "game_engine/game_engine.hpp"
-
-#include "text_vanisher.hpp"
-
-struct counted_interval : std::enable_shared_from_this<counted_interval>
-{
-    using duration = std::chrono::milliseconds;
-
-    counted_interval(game_engine::executor &exec, duration interval, std::size_t times, std::function<void()> f)
-        : executor_(exec)
-        , timer_(executor_)
-        , interval_(interval)
-        , count_(times)
-        , handler_(std::move(f))
-        , current_time_(std::chrono::system_clock::now())
-    {}
-
-    void run()
-    {
-        prime_next();
-    }
-
-    void prime_next()
-    {
-        if (count_) {
-            --count_;
-            current_time_ += interval_;
-            timer_.expires_at(current_time_);
-            timer_.async_wait([self = this->shared_from_this()](std::error_code ec) {
-                if (not ec) {
-                    self->handler_();
-                    self->prime_next();
-                }
-            });
-        }
-    }
-
-
-    game_engine::executor &executor_;
-    game_engine::deadline_timer timer_;
-    duration interval_;
-    std::size_t count_;
-    std::function<void()> handler_;
-    std::chrono::system_clock::time_point current_time_;
-};
-
-void do_every_so_often(game_engine::executor &exec, counted_interval::duration interval, std::size_t times,
-                       std::function<void()> f)
-{
-    std::make_shared<counted_interval>(exec, interval, times, f)->run();
-}
-
-
-int main()
-{
-    using namespace std::literals;
-
-    game_engine::executor executor{};
-
-    assert(not executor.stopped());
-
-    auto larry = Monster(Lich("Larry"));
-    auto raiding_party = std::vector<Monster>();
-    build_party(raiding_party,
-                Goblin("Gobbo"),
-                Goblin("Grunt"),
-                Goblin("Goober"),
-                Lich("Traitorous Bastard"));
-//    executor.post([&] { handle_encounter(larry, raiding_party); });
-
-//    do_every_so_often(executor, 500ms, 5, []() {
-//        std::cout << "monster rethinks path\n";
-//    });
-//
-//    do_every_so_often(executor, 1000ms, 3, [&larry, &raiding_party]() {
-//        handle_encounter(larry, raiding_party);
-//        raiding_party.push_back(Goblin("Another Fucking Goblin"));
-//    });
-
-    auto tv = text_vanisher(executor, "Welcome to My Cool Game", 40, 2s);
-    tv.set_output([](std::string const &buffer) { std::cout << buffer << std::endl; });
-    tv.async_run([](std::error_code err) { std::cout << "done!\n"; });
-
-    while (not executor.stopped()) {
-        executor.run();
-    }
-
-    return 0;
-}
- */
 #include <iostream>
 #include "triangle_program.hpp"
 #include "opengl/buffers.hpp"
 #include <boost/asio.hpp>
+#include <boost/utility/string_view.hpp>
+#include <boost/filesystem.hpp>
+#include <boost/program_options.hpp>
+#include <boost/noncopyable.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include "glfw/glfw.hpp"
 
 static constexpr double PI = 3.141592;
-
 
 
 const xy_colour vertices[] =
     {
         {{-0.6f, -0.6f}, {1.f, 0.f, 0.f}},
         {{+0.6f, +0.0f}, {0.f, 1.f, 0.f}},
-        {{-0.6f, +0.6f},  {0.f, 0.f, 1.f}}
+        {{-0.6f, +0.6f}, {0.f, 0.f, 1.f}}
     };
 
 const xy_colour vertices2[] =
     {
         {{-0.6f, -0.6f}, {1.f, 1.f, 0.f}},
         {{-0.6f, +0.6f}, {0.f, 1.f, 0.f}},
-        {{+0.6f, +0.6f},  {0.f, 0.f, 1.f}},
+        {{+0.6f, +0.6f}, {0.f, 0.f, 1.f}},
 
         {{-0.6f, -0.6f}, {1.f, 1.f, 0.f}},
         {{+0.6f, -0.6f}, {1.f, 0.f, 1.f}},
-        {{+0.6f, +0.6f},  {0.f, 0.f, 1.f}},
+        {{+0.6f, +0.6f}, {0.f, 0.f, 1.f}},
 
     };
 
@@ -181,31 +88,59 @@ void start_flipper(asio::system_timer &timer)
 {
     using namespace std::literals;
     timer.expires_from_now(1s);
-    timer.async_wait([&timer](asio::error_code const &ec) {
-        if (ec == asio::error_code()) {
-            flip = not flip;
-            start_flipper(timer);
-        }
-    });
+    timer.async_wait([&timer](asio::error_code const &ec)
+                     {
+                         if (ec == asio::error_code()) {
+                             flip = not flip;
+                             start_flipper(timer);
+                         }
+                     });
 }
+
+struct program_name_service
+{
+    using path = boost::filesystem::path;
+
+    void set_program_path(path p)
+    {
+        program_path_ = std::move(p);
+        program_dir_ = program_path_.parent_path();
+        program_name_ = program_path_.filename().stem().string();
+    }
+
+    path const &program_directory() const
+    {
+        return program_dir_;
+    }
+
+    const std::string &program_name() const
+    {
+        return program_name_;
+    }
+
+private:
+    path program_path_;
+    path program_dir_;
+    std::string program_name_;
+};
+
+program_name_service application_globals;
+
+namespace glfw {
+
+}
+
 
 void run()
 {
-    GLFWwindow *window;
+    glfw::library window_session;
+
     GLuint vertex_buffer;
 //    GLint mvp_location, vpos_location, vcol_location;
-    glfwSetErrorCallback(error_callback);
-    if (!glfwInit())
-        exit(EXIT_FAILURE);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    window = glfwCreateWindow(640, 480, "Simple example", NULL, NULL);
-    if (!window) {
-        glfwTerminate();
-        exit(EXIT_FAILURE);
-    }
+    auto window = glfw::window(glfw::desktop(), 640, 480, "Simple Window");
+
     glfwSetKeyCallback(window, key_callback);
-    glfwMakeContextCurrent(window);
+    window.make_context_current();
     glewInit();
     glfwSwapInterval(1);  //1
 
@@ -254,8 +189,6 @@ void run()
         glfwPollEvents();
     }
     timer.cancel();
-    glfwDestroyWindow(window);
-    glfwTerminate();
 }
 
 // prints the explanatory string of an exception. If the exception is nested,
@@ -265,18 +198,48 @@ void print_exception(const std::exception &e, int level = 0)
     std::cerr << std::string(level, ' ') << "exception: " << e.what() << '\n';
     try {
         std::rethrow_if_nested(e);
-    } catch (const std::exception &e) {
+    }
+    catch (const std::exception &e) {
         print_exception(e, level + 1);
-    } catch (...) {}
+    }
+    catch (...) { }
 }
 
-int main(void)
+int main(int argc, const char *argv[])
 {
+    application_globals.set_program_path(argv[0]);
+
+    namespace po = boost::program_options;
+    try {
+
+
+        po::options_description desc("Command Line Options");
+        desc.add_options()
+            ("resources,R", po::value<std::string>(), "where to find resource files")
+            ("help,?", "display this message");
+        po::variables_map vm;
+        po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
+        if (vm.count("help")) {
+            std::cout << application_globals.program_name() << " : plays a dungeon game\n"
+                "\nusage: " << application_globals.program_name() << " [options]\n\n";
+            std::cout << desc << std::endl;
+            std::exit(0);
+        }
+
+        po::notify(vm);
+    }
+    catch (std::exception &e) {
+        print_exception(e);
+        std::exit(100);
+    }
+
     try {
         run();
     }
     catch (std::exception &e) {
         print_exception(e);
+        std::exit(4);
     }
-    exit(EXIT_SUCCESS);
+
+    std::exit(EXIT_SUCCESS);
 }
