@@ -1,6 +1,7 @@
 sugar_files(SOURCE_FILES
         config.hpp
         buffer_implementation.cpp buffer_implementation.hpp
+        buffers_service.cpp buffers_service.hpp
         buffers.cpp buffers.hpp
         error.cpp
         error.hpp
