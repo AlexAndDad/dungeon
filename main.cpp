@@ -126,10 +126,6 @@ private:
 
 program_name_service application_globals;
 
-namespace glfw {
-
-}
-
 
 void run()
 {

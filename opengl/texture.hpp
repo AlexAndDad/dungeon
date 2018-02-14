@@ -13,6 +13,7 @@
 
 namespace opengl {
 
+    /// An enumeration type whose enumeration values map directly to opengl texture type values.
     enum class texture_target : GLenum
     {
         dim1 = GL_TEXTURE_1D,
@@ -28,17 +29,23 @@ namespace opengl {
         dim2_multisample_array = GL_TEXTURE_2D_MULTISAMPLE_ARRAY
     };
 
+    /// Convert a texture_target to the native GLenum value for use in underlying appi calls
     inline constexpr auto to_native(texture_target in) -> GLenum
     {
         return static_cast<GLenum>(in);
     }
 
 
+    /// Provide the services of managing a texture lifetime for a given texture type
+    /// @tparam Texture is a texture_target value
+    /// @note an object of a concret specialisation of this class manages exactly one texture of a fixed type
+    ///
     template<texture_target Target>
         struct basic_texture_service
             : basic_resource_service<basic_texture_service<Target>, GLenum>
         {
-            using implementation_type = typename basic_resource_service<basic_texture_service<Target>, GLenum>::implementation_type;
+            using inherited = basic_resource_service<basic_texture_service<Target>, GLenum>;
+            using implementation_type = typename inherited::implementation_type;
 
             static constexpr auto target() -> texture_target
             { return Target; }
@@ -52,13 +59,30 @@ namespace opengl {
                 return impl;
             }
 
-            static auto destroy(implementation_type& impl) -> void
+            static auto destroy(implementation_type &impl) -> void
             {
                 if (impl)
                     glDeleteTextures(1, &impl);
             }
+        };
+
+    template<texture_target Target>
+        struct basic_texture : basic_resource_object<basic_texture_service<Target>>
+        {
+            using inherited = basic_resource_object<basic_texture_service<Target>>;
+            using service_type  = typename inherited::service_type;
+
+            basic_texture()
+                : inherited(std::piecewise_construct)
+            { }
+
 
         };
+
+    using texture_1d = basic_texture<texture_target::dim1>;
+    using texture_2d = basic_texture<texture_target::dim2>;
+    using texture_3d = basic_texture<texture_target::dim3>;
+    // etc
 
 }
 
