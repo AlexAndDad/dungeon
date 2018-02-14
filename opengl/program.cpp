@@ -12,10 +12,13 @@ namespace opengl
     {
         GLint length = 0;
         glGetProgramiv(get_implementation(), GL_PROGRAM_BINARY_LENGTH, &length);
+        check_errors("glGetProgramiv");
         auto result = binary();
         auto prep = result.prepare(std::size_t(length));
-        glGetProgramBinary(get_implementation(), prep.size, nullptr, prep.format_ptr, prep.buffer_ptr);
-        check_errors("glGetProgramBinary");
+        if (length) {
+            glGetProgramBinary(get_implementation(), prep.size, nullptr, prep.format_ptr, prep.buffer_ptr);
+            check_errors("glGetProgramBinary");
+        }
         return result;
     }
 

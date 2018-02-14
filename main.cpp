@@ -2,6 +2,7 @@
 #include <iostream>
 #include "triangle_program.hpp"
 #include "opengl/buffers.hpp"
+#include "opengl/version.hpp"
 #include <boost/asio.hpp>
 #include <boost/utility/string_view.hpp>
 #include <boost/filesystem.hpp>
@@ -138,6 +139,17 @@ void run()
     glfwSetKeyCallback(window, key_callback);
     window.make_context_current();
     glewInit();
+
+
+    auto v = opengl::get_version();
+    std::cout << "version: " << v.major << ", " << v.minor << std::endl;
+
+    // core profile bullshit
+    GLuint vaoId = 0;
+    glGenVertexArrays(1, &vaoId);
+    glBindVertexArray(vaoId);
+    //
+
     glfwSwapInterval(1);  //1
 
     asio::io_context executor;

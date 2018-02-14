@@ -6,7 +6,7 @@
 #define DUNGEON_GL_STRING_HPP
 
 #pragma once
-#include <GL/gl.h>
+#include "opengl/config.hpp"
 #include <string>
 
 namespace opengl {

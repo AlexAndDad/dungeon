@@ -1,9 +1,9 @@
-#version 120
+#version 330
 
 uniform mat4 MVP;
-attribute vec3 vCol;
-attribute vec2 vPos;
-varying vec3 color;
+layout (location = 0) in vec3 vCol;
+layout (location = 1) in vec2 vPos;
+out vec3 color;
 
 void main()
 {

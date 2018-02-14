@@ -12,7 +12,7 @@ namespace glfw
     thread_local std::vector<std::string> library::recent_errors;
 
 
-    library::library(int major, int minor)
+    library::library(opengl::version context_version)
     {
         if (count)
             throw std::logic_error("gflw is a singleton");
@@ -20,7 +20,7 @@ namespace glfw
         if (not glfwInit())
             throw std::runtime_error("failed to intialise glfw");
         ++count;
-        set_context_version(major, minor);
+        set_context_version(context_version);
     }
 
     library::~library()
@@ -31,10 +31,14 @@ namespace glfw
         }
     }
 
-    void library::set_context_version(int major, int minor)
+    void library::set_context_version(opengl::version context_version)
     {
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, major);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, minor);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, context_version.major);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, context_version.minor);
+#ifdef __APPLE__
+        glfwWindowHint (GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        glfwWindowHint (GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#endif
     }
 
     void library::error_callback(int error, const char *description)

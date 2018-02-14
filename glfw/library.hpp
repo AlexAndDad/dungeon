@@ -6,6 +6,8 @@
 #define DUNGEON_IBRARY_HPP
 
 #include "config.hpp"
+#include "opengl/version.hpp"
+
 #include <boost/noncopyable.hpp>
 #include <vector>
 #include <string>
@@ -18,13 +20,16 @@ namespace glfw
     struct monitor {};
     struct window;
 
+//    constexpr opengl::version default_opengl_version = { 3, 2 };
+    constexpr opengl::version default_opengl_version = { 4, 1 };
+
     struct library : boost::noncopyable
     {
-        library(int major = 2, int minor = 1);
+        library(opengl::version version = default_opengl_version);
 
         ~library();
 
-        void set_context_version(int major, int minor);
+        void set_context_version(opengl::version context_version);
 
         static void error_callback(int error, const char *description);
 
