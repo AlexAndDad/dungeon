@@ -7,8 +7,10 @@
 
 #include "config.hpp"
 #include "window_service.hpp"
+#include "opengl/context.hpp"
 
 namespace glfw {
+
     struct window_observer
     {
         using service_type = window_service;
@@ -24,12 +26,16 @@ namespace glfw {
             glfwSetWindowShouldClose(impl_, yn ? GLFW_TRUE : GLFW_FALSE);
         }
 
-        void make_context_current() const;
-
         auto get_implementation() -> implementation_type &
         {
             return impl_;
         }
+
+        window_opengl_context &opengl_context()
+        {
+            return get_service().opengl_context(get_implementation());
+
+        };
 
         constexpr static auto get_service() -> service_type
         {
@@ -46,6 +52,8 @@ namespace glfw {
     protected:
         implementation_type impl_;
     };
+
+    window_opengl_context &opengl_context(window_observer &win);
 
 }
 

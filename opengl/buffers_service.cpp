@@ -24,22 +24,14 @@ namespace opengl {
         }
     }
 
-    auto buffers_service::move_construct(implementation_type &other_impl) noexcept -> implementation_type
-    {
-        auto result = std::move(other_impl);
-        clear(other_impl);
-        return result;
-    }
-
-    auto buffers_service::move_assign(implementation_type &my_impl, implementation_type &other_impl) noexcept -> void
-    {
-        swap(my_impl, other_impl);
-        destroy(other_impl);
-    }
-
     bool buffers_service::empty(implementation_type const &impl)
     {
         return impl.empty();
+    }
+
+    void buffers_service::invalidate(implementation_type &impl) noexcept
+    {
+        clear(impl);
     }
 
 }

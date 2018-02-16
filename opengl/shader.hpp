@@ -12,6 +12,7 @@
 #include "detail/gl_string.hpp"
 #include "shader_service.hpp"
 #include <stdexcept>
+#include <notstd/handle.hpp>
 
 namespace opengl {
 
@@ -21,10 +22,10 @@ namespace opengl {
     };
 
     /// The representation of some kind of shader
-    struct shader : basic_resource_object<shader_service>
+    struct shader : notstd::unique_handle<shader_service>
     {
         shader(shader_type type)
-            : basic_resource_object<shader_service>(std::piecewise_construct, type)
+            : notstd::unique_handle<shader_service>(std::make_tuple(type))
         {
         }
 

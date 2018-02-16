@@ -8,30 +8,36 @@
 
 namespace glfw
 {
+    void window_service::deleter::operator()(GLFWwindow* pwin) const noexcept
+    {
+        if (pwin)
+        {
+            delete static_cast<per_window_data*>(glfwGetWindowUserPointer(pwin));
+            glfwDestroyWindow(pwin);
+        }
+    }
+
     auto window_service::construct_on_desktop(int width, int height, const char *title) -> implementation_type
     {
-        auto window_data = std::make_unique<per_window_data>();
+        auto ptr = std::unique_ptr<GLFWwindow, deleter> {
+            glfwCreateWindow(width, height, title, nullptr, nullptr),
+            deleter()
+        };
 
-        auto pwindow = glfwCreateWindow(width, height, title, nullptr, nullptr);
-        if (not pwindow) {
+        if (not ptr) {
             library::report_errors();
         }
-        glfwSetWindowUserPointer(pwindow, window_data.release());
-        return pwindow;
+
+        auto window_data = std::make_unique<per_window_data>(ptr.get());
+        glfwSetWindowUserPointer(ptr.get(), window_data.release());
+        return ptr.release();
     }
 
     void window_service::destroy(implementation_type& impl) noexcept
     {
-        if (impl)
-        {
-            if(auto pv = glfwGetWindowUserPointer(impl))
-            {
-                auto user_ptr = static_cast<per_window_data*>(pv);
-                delete user_ptr;
-            }
-            glfwDestroyWindow(impl);
-            impl = nullptr;
-        }
+        auto del = deleter();
+        del(impl);
+        impl = nullptr;
     }
 
 }

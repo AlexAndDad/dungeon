@@ -8,22 +8,23 @@
 #pragma once
 
 #include "buffer_implementation.hpp"
+#include "basic_resource_object.hpp"
 
 namespace opengl {
 
     struct buffers_service
     {
-        using implementation_type = buffer_implementation;
+        using native_handle_type = buffer_implementation;
+        using implementation_type = native_handle_type;
 
         static auto construct(std::size_t N) -> implementation_type;
 
         static void destroy(implementation_type &impl) noexcept;
 
-        static auto move_construct(implementation_type &other_impl) noexcept -> implementation_type;
-
-        static auto move_assign(implementation_type &my_impl, implementation_type &other_impl) noexcept -> void;
-
         static bool empty(implementation_type const &impl);
+
+        static void invalidate(implementation_type& impl) noexcept;
+
     };
 
 }

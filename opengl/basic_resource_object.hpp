@@ -15,33 +15,26 @@ namespace opengl {
     /// defer to its service object. The service object will be a concrete class derived from this class.
     /// The reason for this is that the service can then handle the details around creating and deleting
     /// GL handle objects and managing their lifetimes.
-    /// @tparam DataType is the type used to store the underlying GL handle or collection of handles
     /// @tparam Derived is the concrete service class derived from this class
-    template<class Derived, class DataType>
-    struct basic_resource_service
+    /// @tparam NativeType is the type used to store the underlying GL handle or collection of handles
+    template<typename Derived, typename NativeType = GLuint>
+    struct basic_resource_service;
+
+    template<class Derived>
+    struct basic_resource_service<Derived, GLuint>
     {
-        using implementation_type = DataType;
-
-        /// Perform a move-construction of an underlying implementation
-        auto move_construct(implementation_type &other_impl) const -> implementation_type
-        {
-            auto ident = other_impl;
-            other_impl = 0;
-            return ident;
-        }
-
-        /// Perform a move-assignment an underlying implementation
-        auto move_assign(implementation_type &my_impl, implementation_type &other_impl) const -> void
-        {
-            static_cast<Derived const*>(this)->destroy(my_impl);
-            my_impl = other_impl;
-            other_impl = 0;
-        }
+        using native_handle_type = GLuint;
+        using implementation_type = native_handle_type;
 
         /// Determine whether the implementation is empty,i.e. does not represent a GL handle.
-        bool empty(implementation_type const &impl) const
+        bool empty(implementation_type const &impl) const noexcept
         {
             return not impl;
+        }
+
+        void invalidate(implementation_type& impl) const noexcept
+        {
+            impl = 0;
         }
     };
 
@@ -51,27 +44,19 @@ namespace opengl {
     {
         using implementation_type = std::vector<DataType>;
 
-        auto move_construct(implementation_type &other_impl) const -> implementation_type
-        {
-            auto ident = std::move(other_impl);
-            other_impl.clear();
-            return ident;
-        }
-
-        auto move_assign(implementation_type &my_impl, implementation_type &other_impl) const -> void
-        {
-            static_cast<Derived const*>(this)->destroy(my_impl);
-            my_impl = std::move(other_impl);
-            other_impl.clear();
-        }
-
         bool empty(implementation_type const &impl) const
         {
             return not impl.empty();
         }
+
+        void invalidate(implementation_type& impl) const
+        {
+            impl.clear();
+        }
     };
 
 
+    /*
     /// The base class of any GL resource manager object.
     /// @tparam ServiceType is the concrete service class that provides native handle management for this object type
     template<class ServiceType>
@@ -146,7 +131,7 @@ namespace opengl {
     private:
         implementation_type impl_;
     };
-
+*/
 
 
 

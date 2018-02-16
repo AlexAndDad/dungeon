@@ -7,4 +7,10 @@
 namespace opengl
 {
 
+    /// Bind a vertex array object to the current context
+    auto bind(vertex_array const& va) -> void
+    {
+        glBindVertexArray(va.native_handle());
+    }
+
 }

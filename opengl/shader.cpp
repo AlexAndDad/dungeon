@@ -17,13 +17,13 @@ namespace opengl {
     /// Return the log text associated with this shader
     auto shader::log() const -> std::string
     {
-        return get_service().log(get_implementation());
+        return get_service().log(native_handle());
     }
 
 
     auto shader::source() const -> std::string
     {
-        return get_service().source(get_implementation());
+        return get_service().source(native_handle());
     }
 
     auto shader::type() const -> shader_type

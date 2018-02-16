@@ -12,9 +12,10 @@ namespace glfw
     {
     }
 
-    void window_observer::make_context_current() const
+    window_opengl_context& opengl_context(window_observer& win)
     {
-        glfwMakeContextCurrent(impl_);
+        return win.opengl_context();
     }
+
 
 }

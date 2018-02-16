@@ -41,6 +41,14 @@ namespace glfw
 #endif
     }
 
+    void library::check_errors()
+    {
+        if (not recent_errors.empty())
+        {
+            report_errors();
+        }
+    }
+
     void library::error_callback(int error, const char *description)
     {
         auto ts = boost::posix_time::microsec_clock::local_time();

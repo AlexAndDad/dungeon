@@ -7,6 +7,7 @@
 
 
 #include "config.hpp"
+#include "error.hpp"
 #include "library.hpp"
 #include "window.hpp"
 

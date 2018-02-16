@@ -11,12 +11,12 @@ namespace opengl
     auto program::get_binary() const -> binary
     {
         GLint length = 0;
-        glGetProgramiv(get_implementation(), GL_PROGRAM_BINARY_LENGTH, &length);
+        glGetProgramiv(native_handle(), GL_PROGRAM_BINARY_LENGTH, &length);
         check_errors("glGetProgramiv");
         auto result = binary();
         auto prep = result.prepare(std::size_t(length));
         if (length) {
-            glGetProgramBinary(get_implementation(), prep.size, nullptr, prep.format_ptr, prep.buffer_ptr);
+            glGetProgramBinary(native_handle(), prep.size, nullptr, prep.format_ptr, prep.buffer_ptr);
             check_errors("glGetProgramBinary");
         }
         return result;
@@ -29,13 +29,13 @@ namespace opengl
 
     auto program::compiled() const -> bool
     {
-        return get_service().compiled(get_implementation());
+        return get_service().compiled(native_handle());
     }
 
 
     auto program::log() const -> std::string
     {
-        return get_service().log(get_implementation());
+        return get_service().log(native_handle());
     }
 
     auto program::binary::prepare(std::size_t length) -> prepare_args

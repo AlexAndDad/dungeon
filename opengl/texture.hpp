@@ -10,6 +10,7 @@
 #include "config.hpp"
 #include "basic_resource_object.hpp"
 #include "error.hpp"
+#include <notstd/handle.hpp>
 
 namespace opengl {
 
@@ -67,9 +68,9 @@ namespace opengl {
         };
 
     template<texture_target Target>
-        struct basic_texture : basic_resource_object<basic_texture_service<Target>>
+        struct basic_texture : notstd::unique_handle<basic_texture_service<Target>>
         {
-            using inherited = basic_resource_object<basic_texture_service<Target>>;
+            using inherited = notstd::unique_handle<basic_texture_service<Target>>;
             using service_type  = typename inherited::service_type;
 
             basic_texture()

@@ -26,14 +26,14 @@ namespace opengl {
     }
 
     buffers::buffers(std::size_t N)
-        : basic_resource_object<buffers_service>(std::piecewise_construct, N)
+        : notstd::unique_handle<buffers_service>(std::make_tuple(N))
     {}
 
     buffers::buffers(buffer_init const &bi)
     try
         : buffers(1)
     {
-        auto &impl = get_implementation();
+        auto &impl = mutable_native_handle();
         init_and_bind(bi, impl.idents.front(), impl.targets.front());
     }
     catch (...) {
@@ -44,7 +44,7 @@ namespace opengl {
     buffers::buffers(std::initializer_list<buffer_init> il)
         : buffers(il.size())
     {
-        auto &impl = get_implementation();
+        auto &impl = mutable_native_handle();
         if (impl.empty())
             return;
 
@@ -60,7 +60,7 @@ namespace opengl {
 
     void buffers::bind() const
     {
-        auto &&impl = get_implementation();
+        auto &&impl = native_handle();
         auto first = boost::make_zip_iterator(boost::make_tuple(impl.idents.begin(), impl.targets.begin()));
         auto last = boost::make_zip_iterator(boost::make_tuple(impl.idents.end(), impl.targets.end()));
         for (; first != last; ++first) {
@@ -73,14 +73,14 @@ namespace opengl {
 
     void buffers::unbind() const
     {
-        for (auto &&target : get_implementation().targets) {
+        for (auto &&target : native_handle().targets) {
             glBindBuffer(static_cast<GLenum>(target), 0);
         }
     }
 
     std::size_t buffers::size() const
     {
-        return get_implementation().targets.size();
+        return native_handle().targets.size();
     }
 
 

@@ -56,9 +56,6 @@ namespace opengl
         std::vector<GLuint> idents;
         std::vector<buffer_target> targets;
     };
-
-
-
 }
 
 #endif //DUNGEON_BUFFER_IMPLEMENTATION_HPP

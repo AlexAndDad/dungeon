@@ -11,12 +11,13 @@
 #include <initializer_list>
 #include <boost/iterator/zip_iterator.hpp>
 #include "buffers_service.hpp"
+#include <notstd/handle.hpp>
 
 namespace opengl {
 
 
     /// @todo misunderstanding of bound buffers
-    struct buffers : basic_resource_object<buffers_service>
+    struct buffers : notstd::unique_handle<buffers_service>
     {
         buffers(std::size_t N);
 

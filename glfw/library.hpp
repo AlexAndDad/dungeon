@@ -36,6 +36,9 @@ namespace glfw
         [[noreturn]]
         static void report_errors();
 
+        /// If there have been any errors, throw
+        static void check_errors();
+
         static int count;
         static thread_local std::vector<std::string> recent_errors;
     };

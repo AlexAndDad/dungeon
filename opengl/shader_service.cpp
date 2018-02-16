@@ -20,7 +20,6 @@ namespace opengl {
     {
         if (impl)
             glDeleteShader(impl);
-        impl = 0;
     }
 
     std::size_t shader_service::source_length(implementation_type const &impl)

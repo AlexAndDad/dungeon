@@ -5,8 +5,7 @@
 #include "program_service.hpp"
 #include "error.hpp"
 
-namespace opengl
-{
+namespace opengl {
     auto program_service::construct() -> implementation_type
     {
         auto result = glCreateProgram();
@@ -14,10 +13,10 @@ namespace opengl
         return result;
     }
 
-    void program_service::destroy(implementation_type& id)
+    void program_service::destroy(implementation_type &id)
     {
-        glDeleteProgram(id);
-        id = 0;
+        if (id)
+            glDeleteProgram(id);
     }
 
     auto program_service::compiled(implementation_type const &impl) -> bool
@@ -39,9 +38,8 @@ namespace opengl
     std::string program_service::log(implementation_type const &impl)
     {
         std::string result;
-        if(auto length = log_length(impl))
-        {
-            result.resize(length-1);
+        if (auto length = log_length(impl)) {
+            result.resize(length - 1);
             glGetProgramInfoLog(impl, length, nullptr, &result[0]);
             check_errors("glGetProgramInfoLog");
         }

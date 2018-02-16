@@ -13,16 +13,17 @@
 #include <cstdint>
 #include <cstddef>
 #include <initializer_list>
+#include <notstd/handle.hpp>
 
 namespace opengl
 {
 
-    struct program : basic_resource_object<program_service>
+    struct program : notstd::unique_handle<program_service>
     {
         struct binary;
 
         program()
-            : basic_resource_object<program_service>(std::piecewise_construct)
+            : notstd::unique_handle<program_service>(std::make_tuple())
         {}
 
 
@@ -31,7 +32,7 @@ namespace opengl
             : program()
         {
             attach_shaders(shader0, std::forward<Shaders>(shaderN)...);
-            glLinkProgram(get_implementation());
+            glLinkProgram(native_handle());
             check_errors("glLinkProgram");
             if (not compiled())
                 throw program_compilation_failed(log());
@@ -49,7 +50,7 @@ namespace opengl
 
         void use()
         {
-            glUseProgram(get_implementation());
+            glUseProgram(native_handle());
             opengl::check_errors("glUseProgram");
         }
 

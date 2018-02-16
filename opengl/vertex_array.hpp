@@ -6,6 +6,7 @@
 #include "config.hpp"
 #include "basic_resource_object.hpp"
 #include "error.hpp"
+#include <notstd/handle.hpp>
 
 namespace opengl
 {
@@ -13,7 +14,7 @@ namespace opengl
 
     struct vertex_array_service : basic_resource_service<vertex_array_service, GLuint>
     {
-        static auto construct() -> implementation_type
+        static auto construct() -> native_handle_type
         {
             implementation_type result;
             glGenVertexArrays(1, std::addressof(result));
@@ -21,25 +22,27 @@ namespace opengl
             return result;
         }
 
-        static auto destroy(implementation_type& impl) -> void
+        static auto destroy(native_handle_type & impl) -> void
         {
             if (impl) {
                 glDeleteVertexArrays(1, std::addressof(impl));
-                impl = 0;
             }
         }
     };
 
-    struct vertex_array : basic_resource_object<vertex_array_service>
+    struct vertex_array : notstd::unique_handle<vertex_array_service>
     {
-        using inherited = basic_resource_object<vertex_array_service>;
+        using inherited = notstd::unique_handle<vertex_array_service>;
 
-        vertex_array() : inherited(std::piecewise_construct)
+        vertex_array() : inherited(std::make_tuple())
         {
 
         }
 
     };
+
+    /// Bind a vertex array object to the current context
+    auto bind(vertex_array const& va) -> void;
 }
 
 

@@ -2,14 +2,14 @@ cmake_minimum_required(VERSION 3.6)
 include(external_packages/Init.cmake)
 project(dungeon)
 
+if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/notstd)
+    add_subdirectory(notstd)
+endif ()
+
 hunter_add_package(sugar)
 find_package(sugar CONFIG REQUIRED)
 
 set(my_target dungeon)
-
-if (NOT DEFINED CMAKE_CXX_STANDARD)
-    set(CMAKE_CXX_STANDARD 14)
-endif ()
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -22,6 +22,10 @@ sugar_include(game_engine)
 sugar_include(shaders)
 add_executable(${my_target} ${SOURCE_FILES})
 
+if (NOT TARGET NotStd::handle)
+    find_package(NotStd REQUIRED)
+endif ()
+target_link_libraries(${my_target} PUBLIC NotStd::handle)
 
 # add ncurses
 #
