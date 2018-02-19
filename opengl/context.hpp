@@ -5,14 +5,21 @@
 #pragma once
 
 #include "config.hpp"
+#include "glew_initialisation.hpp"
 
 namespace opengl {
+
 
     /// A polymorphic context base. Any window systems' window/screen object may derive from a context.
     /// In doing so, it is advertising that it suports an opengl rendering context. opengl assets will
     /// be created in this rendering context when it is the current one
     struct context
     {
+        context()
+        : glew_init_()
+        {
+        }
+
         /// Make this context object the current rendering context
         void select();
 
@@ -23,7 +30,14 @@ namespace opengl {
 
         virtual ~context() = default;
 
+        void GenBuffers(GLsizei n, GLuint* buffers)
+        {
+            glGenBuffers(n, buffers);
+        }
+
     private:
+
+        glew_initialisation glew_init_;
 
         virtual bool is_equal(context const& other) const = 0;
         virtual void handle_select() = 0;

@@ -6,6 +6,11 @@
 
 namespace opengl
 {
+
+    glew_init_failed::glew_init_failed()
+        : std::runtime_error("glew init failed")
+    { }
+
     context* context::current_context_ = nullptr;
 
     bool context::is_current() const

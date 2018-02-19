@@ -5,6 +5,7 @@
 #ifndef DUNGEON_WINDOW_SERVICE_HPP
 #define DUNGEON_WINDOW_SERVICE_HPP
 
+#include <memory>
 #include "config.hpp"
 #include "opengl/context.hpp"
 #include "library.hpp"
@@ -67,6 +68,14 @@ namespace glfw {
         static per_window_data& user_data(const implementation_type& impl)
         {
             auto p_user_data = static_cast<per_window_data*>(glfwGetWindowUserPointer(impl));
+            if (not p_user_data)
+            {
+                glfwMakeContextCurrent(impl);
+                auto puser = std::make_unique<per_window_data>(impl);
+                p_user_data = puser.get();
+                glfwSetWindowUserPointer(impl, puser.release());
+
+            }
             return *p_user_data;
         }
 

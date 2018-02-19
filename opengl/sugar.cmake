@@ -7,6 +7,7 @@ sugar_files(SOURCE_FILES
         context.cpp context.hpp
         error.cpp
         error.hpp
+        glew_initialisation.cpp glew_initialisation.hpp
         opengl.hpp
         program.cpp
         program.hpp

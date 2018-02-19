@@ -9,6 +9,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "glfw/glfw.hpp"
+#include <GL/glx.h>
 
 static constexpr double PI = 3.141592;
 
@@ -139,9 +140,6 @@ void run()
     auto&& context = opengl_context(window);
     context.select();
 
-    glewInit();
-
-
     auto v = opengl::get_version();
     std::cout << "version: " << v.major << ", " << v.minor << std::endl;
 
@@ -160,9 +158,6 @@ void run()
     // NOTE: OpenGL error checks have been omitted for brevity
     auto vertex_buf = triangle_buffers(vertices);
     auto vertex_buf2 = triangle_buffers(vertices2);
-//    glGenBuffers(1, &vertex_buffer);
-//    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-//    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     auto vertex_shader = make_vertex_shader();
     std::cout << "vertex shader type: " << vertex_shader.type() << "\nsource:\n" << vertex_shader.source();
@@ -187,10 +182,6 @@ void run()
         program.set_z_rotation(float(std::fmod(glfwGetTime(), PI * 2)));
         program.run(orthogonal_matrix(-ratio, ratio, -1.f, 1.f, 1.f, -1.f),
                     flip ? vertex_buf2 : vertex_buf);
-
-//        program.set_z_rotation(float(std::fmod(glfwGetTime(), PI * 2 + 0.6)));
-//        program.run(orthogonal_matrix(-ratio, ratio, -1.f, 1.f, 1.f, -1.f),
-//                    flip ? vertex_buf : vertex_buf2);
 
         glfwSwapBuffers(window);
         executor.poll();
