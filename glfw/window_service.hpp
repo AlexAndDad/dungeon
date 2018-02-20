@@ -57,12 +57,21 @@ namespace glfw {
         window_opengl_context opengl_context_;
     };
 
+    /// Provides operations against a GLFWwindow* handle
     struct window_service
     {
+        /// Declares the type of the handle
         using implementation_type = GLFWwindow *;
 
+        /// constrcts a window handle on the current desktop
         static auto construct_on_desktop(int width, int height, const char *title) -> implementation_type ;
 
+        /// Destroys a window handle
+        /// @pre not empty(impl)
+        /// @post The underlying window is destroyed.
+        /// @post impl == nullptr
+        /// @exceptions guaranteed no exceptions
+        ///
         static void destroy(implementation_type& impl) noexcept ;
 
         static per_window_data& user_data(const implementation_type& impl)

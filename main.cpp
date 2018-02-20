@@ -40,8 +40,10 @@ static void error_callback(int error, const char *description)
 
 static void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
+    auto win = glfw::window_observer(window);
+
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GLFW_TRUE);
+        win.set_should_close();
 }
 
 inline void mat4x4_ortho(glm::mat4 &M, float l, float r, float b, float t, float n, float f)
