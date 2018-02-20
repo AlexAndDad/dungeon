@@ -89,6 +89,23 @@ namespace glfw {
             void operator()(GLFWwindow* pwin) const noexcept;
         };
 
+        static auto empty(implementation_type const& impl) -> bool
+        {
+            return impl == nullptr;
+        }
+
+        static auto should_close(implementation_type const& impl) -> bool
+        {
+            assert(not empty(impl));
+            return glfwWindowShouldClose(impl);
+        }
+
+        static auto set_shold_close(implementation_type& impl, bool should) -> void
+        {
+            assert(not empty(impl));
+            glfwSetWindowShouldClose(impl, should ? GLFW_TRUE : GLFW_FALSE);
+        }
+
     };
 
 }

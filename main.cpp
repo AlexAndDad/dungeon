@@ -170,7 +170,8 @@ void run()
 
     program.shader_program_.get_binary().report(std::cout);
 
-    while (!glfwWindowShouldClose(window)) {
+    while (not window.should_close())
+    {
         float ratio;
         int width, height;
         using matrix = glm::mat4;

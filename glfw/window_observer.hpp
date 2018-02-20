@@ -11,6 +11,7 @@
 
 namespace glfw {
 
+    /// The abstraction of observing a GLFW window.
     struct window_observer
     {
         using service_type = window_service;
@@ -21,14 +22,19 @@ namespace glfw {
         operator GLFWwindow *() const noexcept
         { return impl_; }
 
-        void set_should_close(bool yn)
+        auto should_close() const -> bool
         {
-            glfwSetWindowShouldClose(impl_, yn ? GLFW_TRUE : GLFW_FALSE);
+            return get_service().should_close(get_implementation());
         }
 
-        auto get_implementation() -> implementation_type &
+        auto empty() const -> bool
         {
-            return impl_;
+            return get_service().empty(impl_);
+        }
+
+        void set_should_close(bool yn)
+        {
+            get_service().set_shold_close(get_implementation(), yn);
         }
 
         window_opengl_context &opengl_context()
@@ -43,6 +49,17 @@ namespace glfw {
         }
 
     protected:
+
+        auto get_implementation() const -> GLFWwindow* const&
+        {
+            return impl_;
+        }
+
+        auto get_implementation() -> GLFWwindow* &
+        {
+            return impl_;
+        }
+
         auto swap(window_observer &other) noexcept
         {
             using std::swap;
