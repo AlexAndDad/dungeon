@@ -5,6 +5,7 @@
 #pragma once
 
 #include <notstd/config.hpp>
+#include <functional>
 
 namespace notstd {
 

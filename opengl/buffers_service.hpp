@@ -12,7 +12,7 @@
 
 namespace opengl {
 
-    struct buffers_service
+    struct buffers_service : notstd::stateless_service<buffers_service>
     {
         using native_handle_type = buffer_implementation;
         using implementation_type = native_handle_type;

@@ -10,6 +10,8 @@
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include "glfw/glfw.hpp"
 #include <GL/glx.h>
+#include "freetype/freetype.hpp"
+#include "resources/resource_locator.hpp"
 
 static constexpr double PI = 3.141592;
 
@@ -132,6 +134,8 @@ program_name_service application_globals;
 
 void run()
 {
+    auto ft = freetype::library();
+    auto face = ft.acquire(resource_locator::fonts() / "A-Bebedera.ttf");
     glfw::library window_session;
 
     GLuint vertex_buffer;
@@ -210,6 +214,7 @@ void print_exception(const std::exception &e, int level = 0)
 int main(int argc, const char *argv[])
 {
     application_globals.set_program_path(argv[0]);
+    resource_locator::initialise(argv[0]);
 
     namespace po = boost::program_options;
     try {

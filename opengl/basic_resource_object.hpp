@@ -7,6 +7,7 @@
 #include "config.hpp"
 #include <utility>
 #include <vector>
+#include <notstd/include/notstd/handle/unique_handle.hpp>
 
 namespace opengl {
 
@@ -21,7 +22,7 @@ namespace opengl {
     struct basic_resource_service;
 
     template<class Derived>
-    struct basic_resource_service<Derived, GLuint>
+    struct basic_resource_service<Derived, GLuint> : notstd::stateless_service<Derived>
     {
         using native_handle_type = GLuint;
         using implementation_type = native_handle_type;

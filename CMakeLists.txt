@@ -15,12 +15,22 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 sugar_files(SOURCE_FILES main.cpp monster.cpp monster.hpp triangle_program.cpp triangle_program.hpp)
 sugar_include(environment)
+sugar_include(freetype)
 sugar_include(glfw)
 sugar_include(opengl)
 sugar_include(monster_types)
 sugar_include(game_engine)
+sugar_include(resources)
 sugar_include(shaders)
 add_executable(${my_target} ${SOURCE_FILES})
+
+# collate resources in build directory
+foreach (res_source ${RESOURCE_FILES})
+    string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}" res_binary "${res_source}")
+    configure_file(${res_source} ${res_binary} COPYONLY)
+    sugar_files(RESOURCE_BINARIES ${res_binary})
+endforeach ()
+
 
 if (NOT TARGET NotStd::handle)
     find_package(NotStd REQUIRED)
@@ -54,6 +64,9 @@ hunter_add_package(glfw)
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries(${my_target} PUBLIC glfw)
 
+hunter_add_package(freetype)
+find_package(freetype CONFIG REQUIRED)
+target_link_libraries(${my_target} PUBLIC freetype::freetype)
 
 set(compiler_like_gcc 0)
 if (${CMAKE_CXX_COMPILER_ID} MATCHES "GNU" OR ${CMAKE_CXX_COMPILER_ID} MATCHES "Clang")
