@@ -47,4 +47,9 @@ namespace freetype {
         return face(*this, pathname);
     }
 
+    auto library::acquire(path const &pathname, int pixel_height) -> face
+    {
+        return face(*this, pathname, pixel_height);
+    }
+
 }

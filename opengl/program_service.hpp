@@ -7,6 +7,8 @@
 #pragma once
 
 #include <GL/glew.h>
+#include <glm/fwd.hpp>
+
 #include "basic_resource_object.hpp"
 
 namespace opengl {
@@ -34,6 +36,9 @@ namespace opengl {
         static std::size_t log_length(implementation_type const &impl);
 
         static std::string log(implementation_type const &impl);
+
+        static void set_uniform(native_handle_type& impl, unsigned location, glm::vec4 const& vec);
+        static unsigned get_uniform_index(native_handle_type const& impl, const char* name);
 
     };
 

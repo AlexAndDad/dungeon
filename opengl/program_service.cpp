@@ -4,6 +4,8 @@
 
 #include "program_service.hpp"
 #include "error.hpp"
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace opengl {
     auto program_service::construct() -> implementation_type
@@ -46,4 +48,17 @@ namespace opengl {
         return result;
     }
 
+    unsigned program_service::get_uniform_index(native_handle_type const &impl, const char *name)
+    {
+        auto loc = glGetUniformLocation(impl, name);
+        if (loc < 0)
+            check_errors("glGetUniformLocation");
+        return unsigned(loc);
+    }
+
+    void program_service::set_uniform(native_handle_type &impl, unsigned location, glm::vec4 const &vec)
+    {
+        glProgramUniform1fv(impl, location, 1, value_ptr(vec));
+        check_errors("glProgramUniform1fv");
+    }
 }

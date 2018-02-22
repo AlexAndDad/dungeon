@@ -14,6 +14,7 @@
 #include <cstddef>
 #include <initializer_list>
 #include <notstd/handle.hpp>
+#include <glm/fwd.hpp>
 
 namespace opengl
 {
@@ -60,6 +61,21 @@ namespace opengl
 
         auto get_binary() const -> binary;
 
+
+        unsigned get_uniform_index(const char* name) const;
+
+        template<typename Type>
+        auto set_uniform(unsigned index, Type&& value)
+        {
+            return get_service().set_uniform(mutable_native_handle(), index, std::forward<Type>(value));
+        }
+
+        template<typename Type>
+        auto set_uniform(const char* name, Type&& value)
+        {
+            return set_uniform(get_uniform_index(name), std::forward<Type>(value));
+        }
+
     };
 
     struct program::binary
@@ -77,10 +93,12 @@ namespace opengl
 
         void report(std::ostream& os) const;
 
+
     private:
         GLenum format_;
         std::vector<std::uint8_t> data_;
     };
+
 }
 
 

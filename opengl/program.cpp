@@ -38,6 +38,11 @@ namespace opengl
         return get_service().log(native_handle());
     }
 
+    unsigned program::get_uniform_index(const char *name) const
+    {
+        return get_service().get_uniform_index(native_handle(), name);
+    }
+
     auto program::binary::prepare(std::size_t length) -> prepare_args
     {
         data_.resize(length);
@@ -61,5 +66,6 @@ namespace opengl
         }
         os << '\n';
     }
+
 
 }

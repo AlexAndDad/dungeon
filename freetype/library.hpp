@@ -5,9 +5,7 @@
 #pragma once
 
 
-#include <ft2build.h>
-#include FT_FREETYPE_H
-
+#include "config.hpp"
 #include "service_base.hpp"
 #include <notstd/handle.hpp>
 #include <boost/noncopyable.hpp>
@@ -41,6 +39,7 @@ namespace freetype {
         library();
 
         auto acquire(path const &pathname) -> face;
+        auto acquire(path const &pathname, int pixel_height) -> face;
 
         template<class Service>
             Service& use()

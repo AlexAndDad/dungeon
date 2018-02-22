@@ -12,6 +12,7 @@
 #include <GL/glx.h>
 #include "freetype/freetype.hpp"
 #include "resources/resource_locator.hpp"
+#include <fstream>
 
 static constexpr double PI = 3.141592;
 
@@ -131,11 +132,33 @@ private:
 
 program_name_service application_globals;
 
+auto load_as_string(boost::filesystem::path const& pathname) -> std::string
+try
+{
+    using namespace std;
+    string result;
+    ifstream source(pathname.string(), ios::binary | ios::ate | ios::in);
+    source.exceptions(ios::failbit);
+    auto fileSize = source.tellg();
+    source.seekg(0, ios::beg);
+    result.resize(fileSize);
+    source.read(&result[0], fileSize);
+    return result;
+}
+catch(...)
+{
+    std::throw_with_nested(std::runtime_error("load_as_string : " + pathname.string()));
+}
 
 void run()
 {
     auto ft = freetype::library();
-    auto face = ft.acquire(resource_locator::fonts() / "A-Bebedera.ttf");
+    auto face = ft.acquire(resource_locator::fonts() / "A-Bebedera.ttf", 48);
+    std::cout << "typeface details:\n" << face << "\n";
+
+    auto g_bitmap = face.get_bitmap('G');
+    std::cout << "G Bitmap:\n" << g_bitmap << '\n';
+
     glfw::library window_session;
 
     GLuint vertex_buffer;
@@ -176,6 +199,50 @@ void run()
 
     program.shader_program_.get_binary().report(std::cout);
 
+    auto glyph_vertex_shader = opengl::vertex_shader(load_as_string(resource_locator::fonts() / "vertex_shader.glsl"));
+    auto glyph_fragment_shader = opengl::fragment_shader(load_as_string(resource_locator::fonts() / "fragment_shader.glsl"));
+    auto glyph_program = opengl::program(std::move(glyph_vertex_shader), std::move(glyph_fragment_shader));
+    std::cout << "\nglyph program:\n";
+    glyph_program.get_binary().report(std::cout);
+    glyph_program.use();
+
+    glActiveTexture(GL_TEXTURE0);
+    opengl::texture_2d g_texture;
+    g_texture.bind();
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+    // glyph vbp
+    GLuint glyph_vbo;
+    glGenBuffers(1, &glyph_vbo);
+    auto glyph_attribute_coord = 0;
+    glEnableVertexAttribArray(glyph_attribute_coord);
+    glBindBuffer(GL_ARRAY_BUFFER, glyph_vbo);
+    glVertexAttribPointer(glyph_attribute_coord, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+    glTexImage2D(
+        GL_TEXTURE_2D,
+        0,
+        GL_RED,
+        g_bitmap.width(),
+        g_bitmap.height(),
+        0,
+        GL_RED,
+        GL_UNSIGNED_BYTE,
+        g_bitmap.data()
+    );
+    opengl::check_errors("glTexImage2D");
+
+
+
+
+
     while (not window.should_close())
     {
         float ratio;
@@ -186,9 +253,54 @@ void run()
         glViewport(0, 0, width, height);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        glDisable(GL_BLEND);
+        program.shader_program_.use();
         program.set_z_rotation(float(std::fmod(glfwGetTime(), PI * 2)));
         program.run(orthogonal_matrix(-ratio, ratio, -1.f, 1.f, 1.f, -1.f),
                     flip ? vertex_buf2 : vertex_buf);
+
+//        // render a G
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glyph_program.use();
+        glUniform4fv(glyph_program.get_uniform_index("color"), 1, value_ptr(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)));
+        opengl::check_errors("glUniform1fv");
+//
+        float x = 0.5, y = -.5;
+        float sx = 0.01, sy = 0.01;
+//
+        float x2 = x + g_bitmap.x() * sx;
+        float y2 = -y - g_bitmap.y() * sy;
+        float w = g_bitmap.width() * sx;
+        float h = g_bitmap.height() * sy;
+//
+        GLfloat box[4][4] = {
+            {x2,     -y2    , 0, 0},
+            {x2 + w, -y2    , 1, 0},
+            {x2,     -y2 - h, 0, 1},
+            {x2 + w, -y2 - h, 1, 1},
+        };
+        glBindBuffer(GL_ARRAY_BUFFER, glyph_vbo);
+        glEnableVertexAttribArray(glyph_attribute_coord);
+        glVertexAttribPointer(glyph_attribute_coord, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+        glTexImage2D(
+            GL_TEXTURE_2D,
+            0,
+            GL_RED,
+            g_bitmap.width(),
+            g_bitmap.height(),
+            0,
+            GL_RED,
+            GL_UNSIGNED_BYTE,
+            g_bitmap.data()
+        );
+        opengl::check_errors("glTexImage2D");
+//
+        glBufferData(GL_ARRAY_BUFFER, sizeof box, box, GL_DYNAMIC_DRAW);
+        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        opengl::check_errors("stuff");
+
 
         glfwSwapBuffers(window);
         executor.poll();

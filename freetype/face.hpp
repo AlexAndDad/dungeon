@@ -4,12 +4,14 @@
 
 #pragma once
 
+#include "config.hpp"
 #include "service_base.hpp"
+#include "bitmap_glyph.hpp"
 
 #include <notstd/handle.hpp>
-#include <ft2build.h>
-#include FT_FREETYPE_H
 #include <boost/filesystem.hpp>
+#include <ostream>
+
 
 namespace freetype {
 
@@ -30,6 +32,11 @@ namespace freetype {
 
         bool empty(native_handle_type const &impl) noexcept;
 
+        void report(native_handle_type const &impl, std::ostream &os);
+
+        void set_pixel_size(native_handle_type& impl, int pixel_size);
+
+        bitmap_glyph get_bitmap(native_handle_type& impl, char ch);
     private:
 
         library &owner_;
@@ -37,12 +44,19 @@ namespace freetype {
 
     struct face : notstd::unique_handle<face_service>
     {
-        using path = service_type ::path;
+        using path = service_type::path;
 
         face(library &lib, path const &pathname);
+        face(library &lib, path const &pathname, int point_size);
+
+        void report(std::ostream &os) const;
+
+        bitmap_glyph get_bitmap(char ch);
 
     private:
         using inherited = notstd::unique_handle<face_service>;
     };
+
+    auto operator<<(std::ostream &os, face const &arg) -> std::ostream &;
 
 }

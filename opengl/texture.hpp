@@ -11,6 +11,7 @@
 #include "basic_resource_object.hpp"
 #include "error.hpp"
 #include <notstd/handle.hpp>
+#include <utility>
 
 namespace opengl {
 
@@ -65,6 +66,12 @@ namespace opengl {
                 if (impl)
                     glDeleteTextures(1, &impl);
             }
+
+            static void bind(implementation_type const& impl)
+            {
+                glBindTexture(to_native(target()), impl);
+                check_errors("glBindTexture");
+            }
         };
 
     template<texture_target Target>
@@ -74,9 +81,13 @@ namespace opengl {
             using service_type  = typename inherited::service_type;
 
             basic_texture()
-                : inherited(std::piecewise_construct)
+                : inherited(std::make_tuple())
             { }
 
+            void bind() const
+            {
+                this->get_service().bind(this->native_handle());
+            }
 
         };
 
