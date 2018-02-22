@@ -99,6 +99,21 @@ namespace freetype {
         accumulate_flags(os, impl->face_flags, face_flags);
         os << "\nstyle flags: ";
         accumulate_flags(os, impl->style_flags, style_flags);
+        os << "\navailable chars: ";
+        FT_UInt ch;
+        const char* sep = "";
+        auto code = FT_Get_First_Char(impl, &ch);
+        while(ch != 0)
+        {
+            FT_Load_Char(impl, code, 0);
+            auto index = FT_Get_Char_Index(impl, code);
+            char buf[1024];
+            FT_Get_Glyph_Name(impl, index, buf, sizeof(buf)-1);
+            os << sep <<  buf << '(' << code << ')';
+            sep = ", ";
+            code = FT_Get_Next_Char(impl, code, &ch);
+        }
+
     }
 
     void face_service::set_pixel_size(native_handle_type& impl, int pixel_size)

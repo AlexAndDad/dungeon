@@ -153,10 +153,15 @@ catch(...)
 void run()
 {
     auto ft = freetype::library();
-    auto face = ft.acquire(resource_locator::fonts() / "A-Bebedera.ttf", 48);
+//    auto face = ft.acquire(resource_locator::fonts() / "LinLibertineTTF_5.3.0_2012_07_02" / "LinLibertine_I.ttf", 48);
+    auto face = ft.acquire(resource_locator::fonts() / "A-Bebedera.ttf" , 48);
+
+    auto face2 = face;
+
     std::cout << "typeface details:\n" << face << "\n";
 
     auto g_bitmap = face.get_bitmap('G');
+    auto r_bitmap = face.get_bitmap('R');
     std::cout << "G Bitmap:\n" << g_bitmap << '\n';
 
     glfw::library window_session;

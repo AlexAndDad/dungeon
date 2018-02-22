@@ -26,6 +26,12 @@ namespace freetype {
 
         native_handle_type construct(path const &pathname);
 
+        native_handle_type copy_construct(native_handle_type handle)
+        {
+            FT_Reference_Face(handle);
+            return handle;
+        }
+
         void destroy(native_handle_type &impl) noexcept;
 
         void invalidate(native_handle_type &impl) noexcept;
@@ -38,11 +44,10 @@ namespace freetype {
 
         bitmap_glyph get_bitmap(native_handle_type& impl, char ch);
     private:
-
         library &owner_;
     };
 
-    struct face : notstd::unique_handle<face_service>
+    struct face : notstd::value_handle<face_service>
     {
         using path = service_type::path;
 
@@ -54,7 +59,7 @@ namespace freetype {
         bitmap_glyph get_bitmap(char ch);
 
     private:
-        using inherited = notstd::unique_handle<face_service>;
+        using inherited = notstd::value_handle<face_service>;
     };
 
     auto operator<<(std::ostream &os, face const &arg) -> std::ostream &;

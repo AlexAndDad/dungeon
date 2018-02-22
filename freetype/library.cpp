@@ -5,6 +5,7 @@
 #include "library.hpp"
 #include "face.hpp"
 #include <stdexcept>
+#include <freetype/ftmodapi.h>
 
 namespace freetype {
 
@@ -17,6 +18,7 @@ namespace freetype {
         }
         return result;
     }
+
 
     auto library_service::destroy(native_handle_type &impl) noexcept -> void
     {

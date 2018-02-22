@@ -30,6 +30,10 @@ namespace freetype {
         static bool empty(native_handle_type &impl)  noexcept;
 
         static void invalidate(native_handle_type &impl) noexcept;
+
+        struct instance_data
+        {
+        };
     };
 
     struct library : notstd::unique_handle<library_service>

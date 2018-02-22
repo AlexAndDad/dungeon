@@ -39,25 +39,23 @@ namespace notstd {
 
 #endif
 
+    /// The base class of any service which does not hold state
     template<class HandleService>
         struct stateless_service
         {
             using service_reference = void;
         };
 
+    /// The base class of any service which holds state
     template<class HandleService>
         struct stateful_service
         {
             using service_reference = HandleService *;
-            constexpr static auto to_service_reference(HandleService& s) -> service_reference { return std::addressof(s); }
+
+            constexpr static auto to_service_reference(HandleService &s) -> service_reference
+            { return std::addressof(s); }
         };
 
-
-    template<class HandleService>
-        struct handle_service_traits
-        {
-            using service_reference = typename HandleService::service_reference;
-        };
 
     template
         <
@@ -125,10 +123,10 @@ namespace notstd {
         {
             using observer_type = handle_observer<HandleService, ServiceReference>;
             using service_type = typename observer_type::service_type;
-            using service_reference = typename observer_type ::service_reference ;
+            using service_reference = typename observer_type::service_reference;
 
             template<typename...HandleArguments>
-            unique_handle(service_type& service, std::tuple<HandleArguments...> &&construct_args)
+            unique_handle(service_type &service, std::tuple<HandleArguments...> &&construct_args)
                 :observer_type(service,
                                apply([&service](auto &&...args)
                                      {
@@ -162,6 +160,7 @@ namespace notstd {
             {
                 this->get_service().destroy(this->mutable_native_handle());
             }
+
         };
 
 
@@ -204,10 +203,157 @@ namespace notstd {
             {
                 this->get_service().destroy(this->mutable_native_handle());
             }
-
-
         };
 
+    template
+        <
+            typename HandleService,
+            typename ServiceReference = typename HandleService::service_reference
+        >
+        struct value_handle
+        {
+            using service_type = HandleService;
+            using service_reference = typename service_type::service_reference;
+            using native_handle_type = typename service_type::native_handle_type;
+
+            template<typename...HandleArguments>
+            value_handle(service_type &service, std::tuple<HandleArguments...> &&construct_args)
+                : service_(service_type::to_service_reference(service))
+                  , impl_(apply([this](auto &&...args)
+                                {
+                                    return this->service_->construct(std::forward<decltype(args)>(args)...);
+                                },
+                                std::move(construct_args)))
+            {
+
+            }
+
+            value_handle(value_handle const &other)
+                : service_(other.service_)
+                  , impl_(service_->copy_construct(other.impl_))
+            {
+
+            }
+
+            value_handle(value_handle &&other)
+                : service_(other.service_)
+                  , impl_(other.impl_)
+            {
+                service_->invalidate(other.impl_);
+            }
+
+
+            ~value_handle()
+            {
+                service_->destroy(impl_);
+            }
+
+            auto native_handle() const -> native_handle_type const &
+            {
+                return impl_;
+            }
+
+        protected:
+
+            auto mutable_native_handle() -> native_handle_type &
+            {
+                return impl_;
+            }
+
+            auto get_service() const -> service_type &
+            {
+                return *service_;
+            }
+
+        private:
+            service_reference service_;
+            native_handle_type impl_;
+        };
+
+    template
+        <
+            typename HandleService
+        >
+        struct value_handle<HandleService, void>
+        {
+            using service_type = HandleService;
+            using native_handle_type = typename HandleService::native_handle_type;
+
+            template<typename...HandleArguments>
+            value_handle(std::tuple<HandleArguments...> &&construct_args)
+                :impl_(apply([this](auto &&...args)
+                             {
+                                 auto service = this->get_service();
+                                 return this->get_service().construct(std::forward<decltype(args)>(args)...);
+                             },
+                             std::move(construct_args)))
+            {
+
+            }
+
+            value_handle(value_handle const &other)
+                : impl_(maybe_copy_construct(other.native_handle()))
+            {
+
+            }
+
+            value_handle(value_handle &&other)
+                : impl_(std::move(other.impl_))
+            {
+                other.get_service().invalidate(other.impl_);
+            }
+
+            value_handle &operator=(value_handle const &other) noexcept
+            {
+                auto temp = other;
+                swap(temp);
+                return *this;
+            }
+
+            value_handle &operator=(value_handle &&other)
+            {
+                auto temp = std::move(other);
+                swap(temp);
+                return *this;
+            }
+
+            ~value_handle()
+            {
+                auto &&service = get_service();
+                service.destroy(impl_);
+            }
+
+            auto native_handle() const -> native_handle_type const &
+            {
+                return impl_;
+            }
+
+        protected:
+
+            void swap(value_handle &other)
+            {
+                using std::swap;
+                swap(impl_, other.impl_);
+            }
+
+        private:
+
+            static auto maybe_copy_construct(native_handle_type const &other_impl)
+            {
+                auto service = get_service();
+                if (not service.empty(other_impl))
+                    return service.copy_construct(other_impl);
+                else
+                    return other_impl;
+            }
+
+            constexpr static auto get_service() -> service_type
+            {
+                return service_type();
+            }
+
+            native_handle_type impl_;
+        };
 
 }
 #endif //DUNGEON_UNIQUE_HANDLE_HPP
