@@ -6,6 +6,9 @@
 
 #include "config.hpp"
 #include "glew_initialisation.hpp"
+#include "context_service.hpp"
+#include <memory>
+#include <unordered_map>
 
 namespace opengl {
 
@@ -35,9 +38,24 @@ namespace opengl {
             glGenBuffers(n, buffers);
         }
 
+        template<class Service>
+            auto use() -> Service&
+        {
+            auto i = services_.find(Service::service_id());
+            if (i == std::end(services_))
+            {
+                i = services_.emplace(Service::service_id(), std::make_unique<Service>(*this)).first;
+            }
+            return static_cast<Service&>(*(i->second));
+        }
+
     private:
 
         glew_initialisation glew_init_;
+
+        using context_service_ptr = std::unique_ptr<context_service>;
+        using service_map = std::unordered_map<context_service::identifier, context_service_ptr>;
+        service_map services_;
 
         virtual bool is_equal(context const& other) const = 0;
         virtual void handle_select() = 0;

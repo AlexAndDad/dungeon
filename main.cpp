@@ -13,6 +13,7 @@
 #include "freetype/freetype.hpp"
 #include "resources/resource_locator.hpp"
 #include <fstream>
+#include <opengl/resource_loader_service.hpp>
 
 static constexpr double PI = 3.141592;
 
@@ -174,12 +175,13 @@ void run()
     glfwSetKeyCallback(window, key_callback);
     auto &&context = opengl_context(window);
     context.select();
+    context.use<opengl::resource_loader_service>().add_search_path(resource_locator::root() / "system");
 
     auto v = opengl::get_version();
     std::cout << "version: " << v.major << ", " << v.minor << std::endl;
 
     // core profile bullshit
-    auto va = opengl::vertex_array();
+    auto va = opengl::vertex_array_object();
     bind(va);
     //
 
@@ -232,6 +234,7 @@ void run()
     glEnableVertexAttribArray(glyph_attribute_coord);
     glBindBuffer(GL_ARRAY_BUFFER, glyph_vbo);
     glVertexAttribPointer(glyph_attribute_coord, 2, GL_FLOAT, GL_FALSE, 0, 0);
+
 
     glTexImage2D(
         GL_TEXTURE_2D,

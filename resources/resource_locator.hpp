@@ -12,6 +12,7 @@ struct resource_locator
     using path = boost::filesystem::path;
 
     static void initialise(path const& exe_path);
+    static path const& root();
     static path const& fonts();
 
     struct static_data;

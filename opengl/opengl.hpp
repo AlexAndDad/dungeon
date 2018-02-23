@@ -11,5 +11,5 @@
 #include "shader.hpp"
 #include "texture.hpp"
 #include "version.hpp"
-#include "vertex_array.hpp"
+#include "vertex_array_object.hpp"
 

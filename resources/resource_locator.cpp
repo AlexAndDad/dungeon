@@ -6,6 +6,7 @@
 
 struct resource_locator::static_data
 {
+    path root_path;
     path font_path;
 };
 
@@ -21,10 +22,16 @@ namespace
 void resource_locator::initialise(path const& exe_path)
 {
     auto& data = statics();
-    data.font_path = exe_path.parent_path() / "resources" / "fonts";
+    data.root_path = exe_path.parent_path() / "resources";
+    data.font_path = data.root_path / "fonts";
 }
 
 resource_locator::path const& resource_locator::fonts()
 {
     return statics().font_path;
+}
+
+auto resource_locator::root() -> path const&
+{
+    return statics().root_path;
 }
