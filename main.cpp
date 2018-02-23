@@ -96,7 +96,8 @@ void start_flipper(asio::system_timer &timer)
     timer.expires_from_now(1s);
     timer.async_wait([&timer](asio::error_code const &ec)
                      {
-                         if (ec == asio::error_code()) {
+                         if (ec == asio::error_code())
+                         {
                              flip = not flip;
                              start_flipper(timer);
                          }
@@ -132,7 +133,7 @@ private:
 
 program_name_service application_globals;
 
-auto load_as_string(boost::filesystem::path const& pathname) -> std::string
+auto load_as_string(boost::filesystem::path const &pathname) -> std::string
 try
 {
     using namespace std;
@@ -145,7 +146,7 @@ try
     source.read(&result[0], fileSize);
     return result;
 }
-catch(...)
+catch (...)
 {
     std::throw_with_nested(std::runtime_error("load_as_string : " + pathname.string()));
 }
@@ -154,7 +155,7 @@ void run()
 {
     auto ft = freetype::library();
 //    auto face = ft.acquire(resource_locator::fonts() / "LinLibertineTTF_5.3.0_2012_07_02" / "LinLibertine_I.ttf", 48);
-    auto face = ft.acquire(resource_locator::fonts() / "A-Bebedera.ttf" , 48);
+    auto face = ft.acquire(resource_locator::fonts() / "A-Bebedera.ttf", 48);
 
     auto face2 = face;
 
@@ -171,7 +172,7 @@ void run()
     auto window = glfw::window(glfw::desktop(), 640, 480, "Simple Window");
 
     glfwSetKeyCallback(window, key_callback);
-    auto&& context = opengl_context(window);
+    auto &&context = opengl_context(window);
     context.select();
 
     auto v = opengl::get_version();
@@ -205,7 +206,8 @@ void run()
     program.shader_program_.get_binary().report(std::cout);
 
     auto glyph_vertex_shader = opengl::vertex_shader(load_as_string(resource_locator::fonts() / "vertex_shader.glsl"));
-    auto glyph_fragment_shader = opengl::fragment_shader(load_as_string(resource_locator::fonts() / "fragment_shader.glsl"));
+    auto glyph_fragment_shader = opengl::fragment_shader(
+        load_as_string(resource_locator::fonts() / "fragment_shader.glsl"));
     auto glyph_program = opengl::program(std::move(glyph_vertex_shader), std::move(glyph_fragment_shader));
     std::cout << "\nglyph program:\n";
     glyph_program.get_binary().report(std::cout);
@@ -245,9 +247,6 @@ void run()
     opengl::check_errors("glTexImage2D");
 
 
-
-
-
     while (not window.should_close())
     {
         float ratio;
@@ -256,56 +255,87 @@ void run()
         glfwGetFramebufferSize(window, &width, &height);
         ratio = width / (float) height;
         glViewport(0, 0, width, height);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glDisable(GL_BLEND);
-        program.shader_program_.use();
-        program.set_z_rotation(float(std::fmod(glfwGetTime(), PI * 2)));
-        program.run(orthogonal_matrix(-ratio, ratio, -1.f, 1.f, 1.f, -1.f),
-                    flip ? vertex_buf2 : vertex_buf);
-
-//        // render a G
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        glyph_program.use();
-        glUniform4fv(glyph_program.get_uniform_index("color"), 1, value_ptr(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)));
-        opengl::check_errors("glUniform1fv");
-//
-        float x = 0.5, y = -.5;
-        float sx = 0.01, sy = 0.01;
-//
-        float x2 = x + g_bitmap.x() * sx;
-        float y2 = -y - g_bitmap.y() * sy;
-        float w = g_bitmap.width() * sx;
-        float h = g_bitmap.height() * sy;
-//
-        GLfloat box[4][4] = {
-            {x2,     -y2    , 0, 0},
-            {x2 + w, -y2    , 1, 0},
-            {x2,     -y2 - h, 0, 1},
-            {x2 + w, -y2 - h, 1, 1},
+        auto do_box = [&]
+        {
+            glDisable(GL_BLEND);
+            glEnable(GL_DEPTH_TEST);
+            program.shader_program_.use();
+            program.set_z_rotation(float(std::fmod(glfwGetTime(), PI * 2)));
+            program.run(orthogonal_matrix(-ratio, ratio, -1.f, 1.f, 1.f, -1.f),
+                        flip ? vertex_buf2 : vertex_buf);
         };
-        glBindBuffer(GL_ARRAY_BUFFER, glyph_vbo);
-        glEnableVertexAttribArray(glyph_attribute_coord);
-        glVertexAttribPointer(glyph_attribute_coord, 4, GL_FLOAT, GL_FALSE, 0, 0);
 
-        glTexImage2D(
-            GL_TEXTURE_2D,
-            0,
-            GL_RED,
-            g_bitmap.width(),
-            g_bitmap.height(),
-            0,
-            GL_RED,
-            GL_UNSIGNED_BYTE,
-            g_bitmap.data()
-        );
-        opengl::check_errors("glTexImage2D");
+        auto do_glyph = [&]
+        {
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glyph_program.use();
+            glUniform4fv(glyph_program.get_uniform_index("color"), 1, value_ptr(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)));
+            opengl::check_errors("glUniform1fv");
 //
-        glBufferData(GL_ARRAY_BUFFER, sizeof box, box, GL_DYNAMIC_DRAW);
-        glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        opengl::check_errors("stuff");
+            auto position = glm::vec2(0, 0);
+            auto scale = glm::vec2(0.02, 0.02);
+//
+            float x2 = position.x + g_bitmap.x() * scale.x;
+            float y2 = -position.y - g_bitmap.y() * scale.y;
+            float w = g_bitmap.width() * scale.x;
+            float h = g_bitmap.height() * scale.y;
 
+            std::array<glm::vec2, 4> unscaled =
+                {{
+                     {position.x + g_bitmap.x(), -(-position.y - g_bitmap.y())},
+                     {position.x + g_bitmap.x() + g_bitmap.width(), -(-position.y - g_bitmap.y())},
+                     {position.x + g_bitmap.x(), -(-position.y - g_bitmap.y()) - g_bitmap.height()},
+                     {position.x + g_bitmap.x() + g_bitmap.width(), -(-position.y - g_bitmap.y()) - g_bitmap.height()},
+                 }};
+            auto coords = unscaled;
+            for (auto &&coord : coords)
+            {
+                coord *= scale;
+                coord += glm::vec2(position.x, -position.y);
+            }
+
+//            glm::vec2 coords[] =
+//                {
+//                    { position.x + g_bitmap.x() * scale.x , -(-position.y - g_bitmap.y() * scale.y)},
+//                    { position.x + g_bitmap.x() * scale.x + g_bitmap.width() * scale.x, -(-position.y - g_bitmap.y() * scale.y)},
+//                    { position.x + g_bitmap.x() * scale.x, -(-position.y - g_bitmap.y() * scale.y) - g_bitmap.height() * scale.y },
+//                    { position.x + g_bitmap.x() * scale.x + g_bitmap.width() * scale.x, -(-position.y - g_bitmap.y() * scale.y) - g_bitmap.height() * scale.y},
+//                };
+//
+            glm::vec4 box[4] = {
+                {coords[0]  /*x2,     -y2*/,    0, 0},
+                {coords[1] /*x2 + w, -y2*/,     1, 0},
+                {coords[2] /*x2,     -y2 - h*/, 0, 1},
+                {coords[3] /*x2 + w, -y2 - h*/, 1, 1},
+            };
+            glBindBuffer(GL_ARRAY_BUFFER, glyph_vbo);
+            glEnableVertexAttribArray(glyph_attribute_coord);
+            glVertexAttribPointer(glyph_attribute_coord, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+            glTexImage2D(
+                GL_TEXTURE_2D,
+                0,
+                GL_RED,
+                g_bitmap.width(),
+                g_bitmap.height(),
+                0,
+                GL_RED,
+                GL_UNSIGNED_BYTE,
+                g_bitmap.data()
+            );
+            opengl::check_errors("glTexImage2D");
+//
+            glBufferData(GL_ARRAY_BUFFER, sizeof box, glm::value_ptr(box[0]), GL_DYNAMIC_DRAW);
+            glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+            opengl::check_errors("stuff");
+        };
+//        // render a G
+
+        do_glyph();
+        do_box();
 
         glfwSwapBuffers(window);
         executor.poll();
@@ -319,10 +349,12 @@ void run()
 void print_exception(const std::exception &e, int level = 0)
 {
     std::cerr << std::string(level, ' ') << "exception: " << e.what() << '\n';
-    try {
+    try
+    {
         std::rethrow_if_nested(e);
     }
-    catch (const std::exception &e) {
+    catch (const std::exception &e)
+    {
         print_exception(e, level + 1);
     }
     catch (...) { }
@@ -334,7 +366,8 @@ int main(int argc, const char *argv[])
     resource_locator::initialise(argv[0]);
 
     namespace po = boost::program_options;
-    try {
+    try
+    {
 
 
         po::options_description desc("Command Line Options");
@@ -343,7 +376,8 @@ int main(int argc, const char *argv[])
             ("help,?", "display this message");
         po::variables_map vm;
         po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
-        if (vm.count("help")) {
+        if (vm.count("help"))
+        {
             std::cout << application_globals.program_name() << " : plays a dungeon game\n"
                 "\nusage: " << application_globals.program_name() << " [options]\n\n";
             std::cout << desc << std::endl;
@@ -352,15 +386,18 @@ int main(int argc, const char *argv[])
 
         po::notify(vm);
     }
-    catch (std::exception &e) {
+    catch (std::exception &e)
+    {
         print_exception(e);
         std::exit(100);
     }
 
-    try {
+    try
+    {
         run();
     }
-    catch (std::exception &e) {
+    catch (std::exception &e)
+    {
         print_exception(e);
         std::exit(4);
     }
