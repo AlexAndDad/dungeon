@@ -272,29 +272,38 @@ void run()
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             glyph_program.use();
-            glUniform4fv(glyph_program.get_uniform_index("color"), 1, value_ptr(glm::vec4(1.0f, 1.0f, 0.0f, 1.0f)));
+            auto color = glm::vec4(1, 1, 0, 1);
+            auto offset = glm::vec2(g_bitmap.x(), g_bitmap.y());
+            auto position = glm::vec2(0, 0);
+            auto size = glm::vec2(g_bitmap.width(), g_bitmap.height());
+            auto scale = glm::vec2(0.02, 0.02);
+            glUniform4fv(glyph_program.get_uniform_index("color"), 1, value_ptr(color));
+            glUniform2fv(glyph_program.get_uniform_index("scale"), 1, value_ptr(scale));
+            glUniform2fv(glyph_program.get_uniform_index("position"), 1, value_ptr(position));
+            glUniform2fv(glyph_program.get_uniform_index("size"), 1, value_ptr(size));
+            glUniform2fv(glyph_program.get_uniform_index("offset"), 1, value_ptr(offset));
             opengl::check_errors("glUniform1fv");
 //
-            auto position = glm::vec2(0, 0);
-            auto scale = glm::vec2(0.02, 0.02);
 //
             float x2 = position.x + g_bitmap.x() * scale.x;
             float y2 = -position.y - g_bitmap.y() * scale.y;
             float w = g_bitmap.width() * scale.x;
             float h = g_bitmap.height() * scale.y;
 
-            std::array<glm::vec2, 4> unscaled =
-                {{
-                     {position.x + g_bitmap.x(), -(-position.y - g_bitmap.y())},
-                     {position.x + g_bitmap.x() + g_bitmap.width(), -(-position.y - g_bitmap.y())},
-                     {position.x + g_bitmap.x(), -(-position.y - g_bitmap.y()) - g_bitmap.height()},
-                     {position.x + g_bitmap.x() + g_bitmap.width(), -(-position.y - g_bitmap.y()) - g_bitmap.height()},
-                 }};
-            auto coords = unscaled;
-            for (auto &&coord : coords)
+            auto coords = std::array<glm::vec2, 4>();
+            auto texcoords = std::array<glm::vec2, 4> {{
+                                                          {0,0},
+                                                          {1, 0},
+                                                          {0, 1},
+                                                          {1, 1}
+                                                      }};
+            for (std::size_t i = 0 ; i < 4  ;++ i)
             {
-                coord *= scale;
-                coord += glm::vec2(position.x, -position.y);
+                auto&& tex = texcoords[i];
+                auto&& pos = coords[i];
+
+                pos.x = (offset.x + size.x * tex.x) * scale.x;
+                pos.y = (-(-position.y - offset.y) - size.y * tex.y) * scale.y;
             }
 
 //            glm::vec2 coords[] =
