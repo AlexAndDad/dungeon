@@ -231,7 +231,7 @@ void run()
     auto glyph_attribute_coord = 0;
     glEnableVertexAttribArray(glyph_attribute_coord);
     glBindBuffer(GL_ARRAY_BUFFER, glyph_vbo);
-    glVertexAttribPointer(glyph_attribute_coord, 4, GL_FLOAT, GL_FALSE, 0, 0);
+    glVertexAttribPointer(glyph_attribute_coord, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
     glTexImage2D(
         GL_TEXTURE_2D,
@@ -290,39 +290,15 @@ void run()
             float w = g_bitmap.width() * scale.x;
             float h = g_bitmap.height() * scale.y;
 
-            auto coords = std::array<glm::vec2, 4>();
             auto texcoords = std::array<glm::vec2, 4> {{
                                                           {0,0},
                                                           {1, 0},
                                                           {0, 1},
                                                           {1, 1}
                                                       }};
-            for (std::size_t i = 0 ; i < 4  ;++ i)
-            {
-                auto&& tex = texcoords[i];
-                auto&& pos = coords[i];
-
-                pos.x = (offset.x + size.x * tex.x) * scale.x;
-                pos.y = (-(-position.y - offset.y) - size.y * tex.y) * scale.y;
-            }
-
-//            glm::vec2 coords[] =
-//                {
-//                    { position.x + g_bitmap.x() * scale.x , -(-position.y - g_bitmap.y() * scale.y)},
-//                    { position.x + g_bitmap.x() * scale.x + g_bitmap.width() * scale.x, -(-position.y - g_bitmap.y() * scale.y)},
-//                    { position.x + g_bitmap.x() * scale.x, -(-position.y - g_bitmap.y() * scale.y) - g_bitmap.height() * scale.y },
-//                    { position.x + g_bitmap.x() * scale.x + g_bitmap.width() * scale.x, -(-position.y - g_bitmap.y() * scale.y) - g_bitmap.height() * scale.y},
-//                };
-//
-            glm::vec4 box[4] = {
-                {coords[0]  /*x2,     -y2*/,    0, 0},
-                {coords[1] /*x2 + w, -y2*/,     1, 0},
-                {coords[2] /*x2,     -y2 - h*/, 0, 1},
-                {coords[3] /*x2 + w, -y2 - h*/, 1, 1},
-            };
             glBindBuffer(GL_ARRAY_BUFFER, glyph_vbo);
             glEnableVertexAttribArray(glyph_attribute_coord);
-            glVertexAttribPointer(glyph_attribute_coord, 4, GL_FLOAT, GL_FALSE, 0, 0);
+            glVertexAttribPointer(glyph_attribute_coord, 2, GL_FLOAT, GL_FALSE, 0, 0);
 
             glTexImage2D(
                 GL_TEXTURE_2D,
@@ -337,7 +313,7 @@ void run()
             );
             opengl::check_errors("glTexImage2D");
 //
-            glBufferData(GL_ARRAY_BUFFER, sizeof box, glm::value_ptr(box[0]), GL_DYNAMIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, sizeof texcoords, glm::value_ptr(texcoords[0]), GL_STATIC_DRAW);
             glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
             opengl::check_errors("stuff");
         };
