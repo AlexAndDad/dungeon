@@ -5,6 +5,7 @@
 #include "resource_loader_service.hpp"
 #include <fstream>
 #include <stdexcept>
+#include <boost/interprocess/file_mapping.hpp>
 
 namespace opengl {
 
@@ -51,28 +52,59 @@ namespace opengl {
 
             return result;
         }
+
+        template<class SearchPaths, class F>
+        decltype(auto) with_full_path(SearchPaths&& search_paths, boost::filesystem::path const& leaf, F&& f)
+        {
+            auto action = [&f](auto&& full_path) -> decltype(auto)
+            {
+                return f(full_path);
+            };
+
+            if (leaf.is_absolute())
+            {
+                return f(leaf);
+            }
+            else
+            {
+                for (auto &&root : search_paths)
+                {
+                    auto full_path = root / leaf;
+                    if (exists_and_is_file(full_path))
+                    {
+                        return f(full_path);
+                    }
+                }
+            }
+            throw std::runtime_error("with_full_path : not found : [" + leaf.string() + ']');
+        }
     }
 
     auto resource_loader_service::load_as_string(path const &leaf) -> std::string
     {
         std::string result;
-        if (leaf.is_absolute())
-        {
-            load_into_container(result, leaf);
-            goto loaded;
-        }
-        for (auto &&root : search_paths_)
-        {
-            auto full_path = root / leaf;
-            if (exists_and_is_file(full_path))
-            {
-                load_into_container(result, full_path);
-                goto loaded;
-            }
-        }
-        throw std::runtime_error("load_as_string : not found : [" + leaf.string() + ']');
-        loaded:
+        with_full_path(search_paths_, leaf, [&result](auto&& full_path) {
+            load_into_container(result, full_path);
+        });
         return result;
     }
+
+    auto resource_loader_service::load_as_mapped_file(path const &leaf) -> mapped_file
+    {
+        return with_full_path(search_paths_, leaf, [](auto&& full_path)
+        {
+            return mapped_file(full_path.c_str());
+        });
+    }
+
+
+    mapped_file::mapped_file(path const &pathname)
+    : mapping_(pathname.c_str(), boost::interprocess::read_only)
+    , mr_(mapping_, boost::interprocess::read_only)
+    {
+
+    }
+
+
 
 }

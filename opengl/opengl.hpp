@@ -7,6 +7,7 @@
 #include "config.hpp"
 #include "buffers.hpp"
 #include "error.hpp"
+#include "glyph_renderer.hpp"
 #include "program.hpp"
 #include "shader.hpp"
 #include "texture.hpp"

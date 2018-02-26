@@ -8,9 +8,19 @@
 #pragma once
 #include "opengl/config.hpp"
 #include <string>
+#include <boost/utility/string_view.hpp>
 
 namespace opengl {
     namespace detail {
+
+
+        inline const GLchar *to_gl_char(boost::string_view const &str) {
+            return str.data();
+        }
+
+        inline GLint get_gl_string_length(boost::string_view const &str) {
+            return GLint(str.size());
+        }
 
 
         inline const GLchar *to_gl_char(std::string const &str) {

@@ -14,14 +14,21 @@ namespace opengl {
     , glyph_program_(make_glyph_program())
     {
 
+        bind(glyph_vao_);
+
+        glyph_program_.use();
+
+
 
     }
 
 
     auto glyph_render_service::make_glyph_program() -> program
     {
-        return program(vertex_shader(resource_loader_.load_as_string("system/glyph_vertex_shader.glsl")),
-                       fragment_shader(resource_loader_.load_as_string("system/glyph_fragment_shader.glsl")));
+        auto vertex_mapping = resource_loader_.load_as_mapped_file("system/glyph_vertex_shader.glsl");
+        auto fragment_mapping = resource_loader_.load_as_mapped_file("system/glyph_fragment_shader.glsl");
+        return program(vertex_shader(vertex_mapping.as_string_view()),
+                       fragment_shader(fragment_mapping.as_string_view()));
 
     }
 }

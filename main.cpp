@@ -175,10 +175,12 @@ void run()
     glfwSetKeyCallback(window, key_callback);
     auto &&context = opengl_context(window);
     context.select();
-    context.use<opengl::resource_loader_service>().add_search_path(resource_locator::root() / "system");
+    context.use<opengl::resource_loader_service>().add_search_path(resource_locator::root());
 
     auto v = opengl::get_version();
     std::cout << "version: " << v.major << ", " << v.minor << std::endl;
+
+    auto R_glyph = opengl::glyph_renderer(context, 'R', 48);
 
     // core profile bullshit
     auto va = opengl::vertex_array_object();
